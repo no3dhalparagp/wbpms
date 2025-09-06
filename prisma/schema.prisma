@@ -41,26 +41,28 @@ model Session {
 }
 
 model User {
-  id              String         @id @default(auto()) @map("_id") @db.ObjectId
+  id              String    @id @default(auto()) @map("_id") @db.ObjectId
   name            String?
-  email           String         @unique
+  email           String    @unique
   emailVerified   DateTime?
   image           String?
-  password        String?        // Added password field for credentials auth
-  role            Role           @default(STAFF)
-  isActive        Boolean        @default(true)
-  gramPanchayatId String?        @db.ObjectId  // GP association
-  designation     String?        // Job designation (Clerk, Secretary, etc.)
-  employeeId      String?        // Government employee ID
-  phoneNumber     String?        // Contact number
-  aadharNumber    String?        // Aadhar number (masked)
-  joiningDate     DateTime?      // Date of joining
-  createdAt       DateTime       @default(now())
-  updatedAt       DateTime       @updatedAt
+  password        String? // Added password field for credentials auth
+  role            Role      @default(STAFF)
+  isActive        Boolean   @default(true)
+  gramPanchayatId String?   @db.ObjectId // GP association
+  designation     String? // Job designation (Clerk, Secretary, etc.)
+  employeeId      String? // Government employee ID
+  phoneNumber     String? // Contact number
+  aadharNumber    String? // Aadhar number (masked)
+  joiningDate     DateTime? // Date of joining
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
 
-  accounts        Account[]
-  sessions        Session[]
-  gramPanchayat   GramPanchayat? @relation(fields: [gramPanchayatId], references: [id])
+  accounts          Account[]
+  sessions          Session[]
+  gramPanchayat     GramPanchayat?      @relation(fields: [gramPanchayatId], references: [id])
+  WarishApplication WarishApplication[]
+  WarishDocument    WarishDocument[]
 
   @@map("users")
 }
@@ -68,59 +70,305 @@ model User {
 model GramPanchayat {
   id            String   @id @default(auto()) @map("_id") @db.ObjectId
   name          String
-  code          String   @unique  // GP code assigned by government
+  code          String   @unique // GP code assigned by government
   state         String
   district      String
   block         String
   pincode       String?
   address       String?
   population    Int?
-  area          Float?   // in sq km
-  sarpanchName  String?  // Elected head of GP
-  secretaryName String?  // GP Secretary
+  area          Float? // in sq km
+  sarpanchName  String? // Elected head of GP
+  secretaryName String? // GP Secretary
   phoneNumber   String?
   email         String?
   isActive      Boolean  @default(true)
   createdAt     DateTime @default(now())
   updatedAt     DateTime @updatedAt
-  
+
   // Relations
-  users         User[]
-  villages      Village[]
-  wards         Ward[]
-  
+  users                     User[]
+  villages                  Village[]
+  wards                     Ward[]
+  warishApplications        WarishApplication[]
+  agencyDetails             AgencyDetails[]
+  approvedActionPlanDetails ApprovedActionPlanDetails[]
+  nitDetails                NitDetails[]
+
   @@map("gram_panchayats")
 }
 
+model WarishApplication {
+  id                    String   @id @default(auto()) @map("_id") @db.ObjectId
+  reportingDate         DateTime
+  acknowlegment         String   @unique
+  applicantName         String
+  applicantMobileNumber String
+  relationwithdeceased  String
+  nameOfDeceased        String
+  dateOfDeath           DateTime
+
+  gender                    Gender
+  maritialStatus            MaritialStatus
+  fatherName                String
+  spouseName                String?
+  villageName               String
+  postOffice                String
+  gramPanchayatId           String                      @db.ObjectId // GP association
+  warishDetails             WarishDetail[]
+  assingstaffId             String?                     @db.ObjectId
+  fieldreportRemark         String?
+  adminNoteRemark           String?
+  warishRefNo               String?
+  warishRefDate             DateTime?
+  approvalYear              String?
+  renewdate                 DateTime?
+  warishApplicationStatus   WarishApplicationStatus     @default(submitted)
+  createdAt                 DateTime                    @default(now())
+  updatedAt                 DateTime                    @updatedAt
+  User                      User?                       @relation(fields: [userId], references: [id])
+  userId                    String?                     @db.ObjectId
+  gramPanchayat             GramPanchayat               @relation(fields: [gramPanchayatId], references: [id])
+  warishdocumentverified    Boolean                     @default(false)
+  WarishDocument            WarishDocument[]
+  WarishModificationRequest WarishModificationRequest[]
+
+  @@index([applicantName, nameOfDeceased])
+  @@index([gramPanchayatId])
+  @@index([gramPanchayatId, warishApplicationStatus])
+  @@index([villageName, gramPanchayatId])
+}
+
+model WarishDetail {
+  id                  String             @id @default(auto()) @map("_id") @db.ObjectId
+  name                String
+  gender              Gender
+  relation            FamilyRelationship
+  livingStatus        LivingStatus
+  maritialStatus      MaritialStatus
+  hasbandName         String?
+  children            WarishDetail[]     @relation("ParentChild")
+  parent              WarishDetail?      @relation("ParentChild", fields: [parentId], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  parentId            String?            @db.ObjectId
+  warishApplication   WarishApplication  @relation(fields: [warishApplicationId], references: [id], onDelete: Cascade)
+  warishApplicationId String             @db.ObjectId
+  createdAt           DateTime           @default(now())
+  updatedAt           DateTime           @updatedAt
+
+  @@index([name, warishApplicationId])
+}
+
+enum Gender {
+  male
+  female
+  other
+}
+
+enum MaritialStatus {
+  married
+  unmarried
+  divorced
+  widowed
+}
+
+enum LivingStatus {
+  alive
+  dead
+}
+
+enum WarishApplicationStatus {
+  submitted
+  pending
+  process
+  approved
+  rejected
+  cancelled
+  renewed
+}
+
+enum FamilyRelationship {
+  Son
+  Daughter
+  Father
+  Mother
+  Brother
+  Wife
+  Husband
+  Sister
+  Grandfather
+  Grandmother
+  Grandson
+  Granddaughter
+  Uncle
+  Aunt
+  Nephew
+  Niece
+  Cousin
+  Stepfather
+  Stepmother
+  Stepson
+  Stepdaughter
+  Stepbrother
+  Stepsister
+  HalfBrother
+  HalfSister
+  FatherInLaw
+  MotherInLaw
+  SonInLaw
+  DaughterInLaw
+  GranddaughterInLaw
+  BrotherInLaw
+  SisterInLaw
+  Greatgrandson
+  Greatgranddaughter
+  GreatgranddaughterInLaw
+  GreatNephew
+  GreatNiece
+}
+
+model WarishDocument {
+  id                 String            @id @default(auto()) @map("_id") @db.ObjectId
+  warishId           String            @db.ObjectId
+  documentType       String
+  cloudinaryUrl      String
+  cloudinaryPublicId String
+  verified           Boolean           @default(false)
+  remarks            String?
+  createdAt          DateTime          @default(now())
+  updatedAt          DateTime          @updatedAt
+  warish             WarishApplication @relation(fields: [warishId], references: [id])
+  User               User?             @relation(fields: [userId], references: [id])
+  userId             String?           @db.ObjectId
+
+  @@index([warishId])
+  @@index([verified])
+  @@index([documentType])
+}
+
+// Simplified Prisma schema for Warish Application with basic modification system
+
+// Simple Modification Request Model
+model WarishModificationRequest {
+  id                    String                    @id @default(auto()) @map("_id") @db.ObjectId
+  warishApplicationId   String?                   @db.ObjectId // Now optional
+  warishDetailId        String?                   @db.ObjectId // Optional
+  targetType            String // 'application' or 'detail'
+  warishApplication     WarishApplication?        @relation(fields: [warishApplicationId], references: [id], onDelete: Cascade)
+  fieldToModify         String // Field name to be modified
+  currentValue          String // Current value in the application or detail
+  proposedValue         String // Proposed new value
+  reasonForModification String // Reason for the change
+  requestedBy           String // Name of person requesting
+  requestedDate         DateTime                  @default(now())
+  status                ModificationRequestStatus @default(pending)
+  reviewedBy            String? // Name of person who reviewed
+  reviewedDate          DateTime? // Date of review
+  reviewComments        String? // Comments from reviewer
+  createdAt             DateTime                  @default(now())
+  updatedAt             DateTime                  @updatedAt
+
+  @@index([warishApplicationId])
+  @@index([warishDetailId])
+  @@index([status])
+  @@index([requestedDate])
+  @@index([targetType])
+  @@index([warishApplicationId, warishDetailId])
+  // At least one of warishApplicationId or warishDetailId must be non-null (enforced in application logic)
+  // targetType should be 'application' if warishApplicationId is set, 'detail' if warishDetailId is set
+  @@map("warish_modification_requests")
+}
+
+// Enums
+
+enum ApplicationStatus {
+  pending
+  approved
+  rejected
+  under_review
+}
+
+enum ModificationRequestStatus {
+  pending
+  approved
+  rejected
+}
+
+enum AgencyType {
+  FARM
+  INDIVIDUAL
+}
+
+enum TenderStatus {
+  publish
+  published
+  ToBeOpened
+  TechnicalBidOpening
+  TechnicalEvaluation
+  FinancialBidOpening
+  FinancialEvaluation
+  AOC
+  Retender
+  Cancelled
+}
+
+enum workStatus {
+  approved
+  tenderPublish
+  workorder
+  yettostart
+  workinprogress
+  workcompleted
+  billgenerated
+  billpaid
+}
+
+enum EarnestMoneyStatus {
+  pending
+  paid
+  refunded
+  forfeited
+}
+
+enum SecrutityDepositStatus {
+  paid
+  unpaid
+}
+
+enum PaymentMethod {
+  CASH
+  CHEQUE
+  ONLINE_TRANSFER
+}
+
 model Village {
-  id              String        @id @default(auto()) @map("_id") @db.ObjectId
+  id              String   @id @default(auto()) @map("_id") @db.ObjectId
   name            String
-  code            String?       // Village code
-  gramPanchayatId String        @db.ObjectId
+  code            String? // Village code
+  gramPanchayatId String   @db.ObjectId
   population      Int?
-  area            Float?        // in sq km
-  isActive        Boolean       @default(true)
-  createdAt       DateTime      @default(now())
-  updatedAt       DateTime      @updatedAt
-  
-  gramPanchayat   GramPanchayat @relation(fields: [gramPanchayatId], references: [id])
-  
+  area            Float? // in sq km
+  isActive        Boolean  @default(true)
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  gramPanchayat GramPanchayat @relation(fields: [gramPanchayatId], references: [id])
+
   @@map("villages")
 }
 
 model Ward {
-  id              String        @id @default(auto()) @map("_id") @db.ObjectId
+  id              String   @id @default(auto()) @map("_id") @db.ObjectId
   number          Int
   name            String?
-  gramPanchayatId String        @db.ObjectId
+  gramPanchayatId String   @db.ObjectId
   population      Int?
   area            Float?
-  isActive        Boolean       @default(true)
-  createdAt       DateTime      @default(now())
-  updatedAt       DateTime      @updatedAt
-  
-  gramPanchayat   GramPanchayat @relation(fields: [gramPanchayatId], references: [id])
-  
+  isActive        Boolean  @default(true)
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  gramPanchayat GramPanchayat @relation(fields: [gramPanchayatId], references: [id])
+
   @@unique([gramPanchayatId, number])
   @@map("wards")
 }
@@ -130,6 +378,420 @@ model VerificationToken {
   identifier String
   token      String   @unique
   expires    DateTime
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
 
   @@unique([identifier, token])
+}
+
+model AgencyDetails {
+  id              String         @id @default(auto()) @map("_id") @db.ObjectId
+  name            String
+  agencyType      AgencyType     @default(INDIVIDUAL)
+  proprietorName  String? // Added for farm agencies
+  mobileNumber    String?
+  email           String?
+  pan             String?
+  tin             String?
+  gst             String?
+  contactDetails  String
+  gramPanchayatId String?        @db.ObjectId // GP association
+  gramPanchayat   GramPanchayat? @relation(fields: [gramPanchayatId], references: [id])
+  Bidagency       Bidagency[]
+  Bid             Bid[]
+  Order           Order[]
+  createdAt       DateTime       @default(now())
+  updatedAt       DateTime       @updatedAt
+
+  @@index([gramPanchayatId])
+  @@index([agencyType])
+  @@index([name])
+}
+
+model ApprovedActionPlanDetails {
+  id                  String        @id @default(auto()) @map("_id") @db.ObjectId
+  financialYear       String
+  themeName           String
+  activityCode        Int
+  activityName        String
+  activityDescription String
+  activityFor         String
+  sector              String
+  locationofAsset     String
+  estimatedCost       Int
+  totalduration       String
+  schemeName          String
+  generalFund         Int
+  scFund              Int
+  stFund              Int
+  isPublish           Boolean       @default(false)
+  gramPanchayatId     String        @db.ObjectId // GP association
+  gramPanchayat       GramPanchayat @relation(fields: [gramPanchayatId], references: [id])
+  createdAt           DateTime      @default(now())
+  updatedAt           DateTime      @updatedAt
+
+  WorksDetail    WorksDetail[]
+  AggrementModel AggrementModel[]
+
+  @@index([gramPanchayatId])
+  @@index([financialYear])
+  @@index([activityCode])
+  @@index([isPublish])
+}
+
+model NitDetails {
+  id                      String        @id @default(auto()) @map("_id") @db.ObjectId
+  memoNumber              Int
+  memoDate                DateTime
+  isSupply                Boolean       @default(false)
+  supplyitemname          String?
+  publishingDate          DateTime
+  documentDownloadFrom    DateTime
+  startTime               DateTime
+  endTime                 DateTime
+  technicalBidOpeningDate DateTime
+  financialBidOpeningDate DateTime?
+  placeOfOpeningBids      String
+  bidValidity             Int
+  isPublished             Boolean       @default(false)
+  publishhardcopy         String?
+  nitCount                String        @default("1st call")
+  gramPanchayatId         String        @db.ObjectId // GP association
+  gramPanchayat           GramPanchayat @relation(fields: [gramPanchayatId], references: [id])
+  createdAt               DateTime      @default(now())
+  updatedAt               DateTime      @updatedAt
+  documents               Document[]
+  WorksDetail             WorksDetail[]
+
+  @@index([gramPanchayatId])
+  @@index([memoNumber])
+  @@index([isPublished])
+  @@index([publishingDate])
+}
+
+model WorksDetail {
+  id                          String                    @id @default(auto()) @map("_id") @db.ObjectId
+  workslno                    Int
+  participationFee            Int
+  earnestMoneyFee             Int
+  finalEstimateAmount         Int
+  tenderStatus                TenderStatus
+  nitDetailsId                String                    @db.ObjectId
+  nitDetails                  NitDetails                @relation(fields: [nitDetailsId], references: [id])
+  biddingAgencies             Bidagency[]
+  completionDate              DateTime?
+  workCommencementDate        DateTime?
+  createdAt                   DateTime                  @default(now())
+  updatedAt                   DateTime                  @updatedAt
+  AwardofContract             AwardofContract?          @relation(fields: [awardofContractId], references: [id])
+  approvedActionPlanDetailsId String                    @db.ObjectId
+  paymentDetails              PaymentDetails[]
+  workStatus                  workStatus                @default(approved)
+  ApprovedActionPlanDetails   ApprovedActionPlanDetails @relation(fields: [approvedActionPlanDetailsId], references: [id])
+  awardofContractId           String?                   @db.ObjectId
+  WorkOrderCancellation       WorkOrderCancellation[]
+  AOCDetails                  AOC[]
+
+  @@index([nitDetailsId])
+  @@index([approvedActionPlanDetailsId])
+  @@index([tenderStatus])
+  @@index([workStatus])
+  @@index([awardofContractId])
+}
+
+model Bidagency {
+  id                           String                      @id @default(auto()) @map("_id") @db.ObjectId
+  agencydetails                AgencyDetails               @relation(fields: [agencyDetailsId], references: [id])
+  biddingAmount                Int?
+  WorksDetail                  WorksDetail?                @relation(fields: [worksDetailId], references: [id])
+  worksDetailId                String?                     @db.ObjectId
+  agencyDetailsId              String                      @db.ObjectId
+  technicalEvelution           TechnicalEvelutiondocument? @relation(fields: [technicalEvelutiondocumentId], references: [id])
+  technicalEvelutiondocumentId String?                     @db.ObjectId
+  workorderdetails             workorderdetails[]
+  AggrementModel               AggrementModel[]
+  earnestMoneyRegister         EarnestMoneyRegister[]
+  createdAt                    DateTime                    @default(now())
+  updatedAt                    DateTime                    @updatedAt
+
+  @@index([agencyDetailsId])
+  @@index([worksDetailId])
+  @@index([biddingAmount])
+}
+
+model TechnicalEvelutiondocument {
+  id                         String             @id @default(auto()) @map("_id") @db.ObjectId
+  credencial                 Credencial         @relation(fields: [credencialId], references: [id])
+  validityofdocument         Validityofdocument @relation(fields: [validityofdocumentId], references: [id])
+  byelow                     Boolean            @default(false)
+  pfregistrationupdatechalan Boolean            @default(false)
+  declaration                Boolean            @default(false)
+  machinary                  Boolean            @default(false)
+  qualify                    Boolean            @default(false)
+  remarks                    String?
+  bidagencyId                String             @db.ObjectId
+  credencialId               String             @db.ObjectId
+  validityofdocumentId       String             @db.ObjectId
+  Bidagency                  Bidagency[]
+  createdAt                  DateTime           @default(now())
+  updatedAt                  DateTime           @updatedAt
+
+  @@index([bidagencyId])
+  @@index([credencialId])
+  @@index([validityofdocumentId])
+  @@index([qualify])
+}
+
+model Credencial {
+  id                         String                       @id @default(auto()) @map("_id") @db.ObjectId
+  sixtyperamtput             Boolean
+  workorder                  Boolean                      @default(false)
+  paymentcertificate         Boolean                      @default(false)
+  comcertificat              Boolean                      @default(false)
+  TechnicalEvelutiondocument TechnicalEvelutiondocument[]
+  createdAt                  DateTime                     @default(now())
+  updatedAt                  DateTime                     @updatedAt
+}
+
+model Validityofdocument {
+  id                         String                       @id @default(auto()) @map("_id") @db.ObjectId
+  itreturn                   Boolean                      @default(false)
+  gst                        Boolean                      @default(false)
+  tradelicence               Boolean                      @default(false)
+  ptax                       Boolean                      @default(false)
+  TechnicalEvelutiondocument TechnicalEvelutiondocument[]
+  createdAt                  DateTime                     @default(now())
+  updatedAt                  DateTime                     @updatedAt
+}
+
+model AwardofContract {
+  id                 String             @id @default(auto()) @map("_id") @db.ObjectId
+  workodermenonumber String
+  workordeermemodate DateTime
+  isdelivery         Boolean            @default(false)
+  deliveryDate       DateTime?
+  workorderdetails   workorderdetails[]
+  WorksDetail        WorksDetail[]
+  createdAt          DateTime           @default(now())
+  updatedAt          DateTime           @updatedAt
+
+  @@index([workodermenonumber])
+  @@index([workordeermemodate])
+}
+
+model EarnestMoneyRegister {
+  id                 String             @id @default(auto()) @map("_id") @db.ObjectId
+  earnestMoneyAmount Int
+  paymentstatus      EarnestMoneyStatus @default(pending)
+  bidderName         Bidagency          @relation(fields: [bidderId], references: [id])
+  bidderId           String             @db.ObjectId
+  createdAt          DateTime           @default(now())
+  updatedAt          DateTime           @updatedAt
+  paymentDate        DateTime?
+  paymentMethod      PaymentMethod?
+  chequeNumber       String?
+  chequeDate         DateTime?
+
+  @@index([bidderId])
+  @@index([paymentstatus])
+  @@index([paymentDate])
+}
+
+model workorderdetails {
+  id                     String          @id @default(auto()) @map("_id") @db.ObjectId
+  awardofcontractdetails AwardofContract @relation(fields: [awardofContractId], references: [id])
+  Bidagency              Bidagency?      @relation(fields: [bidagencyId], references: [id])
+  bidagencyId            String?         @db.ObjectId
+  awardofContractId      String          @db.ObjectId
+  createdAt              DateTime        @default(now())
+  updatedAt              DateTime        @updatedAt
+
+  @@index([awardofContractId])
+  @@index([bidagencyId])
+}
+
+model PaymentDetails {
+  id                    String             @id @default(auto()) @map("_id") @db.ObjectId
+  grossBillAmount       Int
+  lessIncomeTax         IncomeTaxRegister? @relation(fields: [incomeTaxRegisterId], references: [id])
+  lessLabourWelfareCess LabourWelfareCess? @relation(fields: [labourWelfareCessId], references: [id])
+  lessTdsCgst           TdsCgst?           @relation(fields: [tdsCgstId], references: [id])
+  lessTdsSgst           TdsSgst?           @relation(fields: [tdsSgstId], references: [id])
+  securityDeposit       SecrutityDeposit?  @relation(fields: [secrutityDepositId], references: [id])
+  billPaymentDate       DateTime
+  eGramVoucher          String
+  eGramVoucherDate      DateTime
+  gpmsVoucherNumber     String
+  gpmsVoucherDate       DateTime
+  billType              String
+  mbrefno               String
+  netAmt                Int
+  workcompletaitiondate DateTime?
+  isfinalbill           Boolean            @default(false)
+  secrutityDepositId    String             @db.ObjectId
+  incomeTaxRegisterId   String             @db.ObjectId
+  labourWelfareCessId   String             @db.ObjectId
+  tdsCgstId             String             @db.ObjectId
+  tdsSgstId             String             @db.ObjectId
+  WorksDetail           WorksDetail        @relation(fields: [worksDetailId], references: [id])
+  worksDetailId         String             @db.ObjectId
+  createdAt             DateTime           @default(now())
+  updatedAt             DateTime           @updatedAt
+
+  @@index([worksDetailId])
+  @@index([billPaymentDate])
+  @@index([isfinalbill])
+  @@index([billType])
+}
+
+model SecrutityDeposit {
+  id                 String                 @id @default(auto()) @map("_id") @db.ObjectId
+  securityDepositAmt Int
+  maturityDate       DateTime?
+  PaymentDetails     PaymentDetails[]
+  paymentMethod      PaymentMethod?
+  chequeNumber       String?
+  chequeDate         DateTime?
+  paymentDate        DateTime?
+  transactionID      String?
+  paymentstatus      SecrutityDepositStatus @default(unpaid)
+  createdAt          DateTime               @default(now())
+  updatedAt          DateTime               @updatedAt
+
+  @@index([paymentstatus])
+  @@index([maturityDate])
+}
+
+model IncomeTaxRegister {
+  id               String           @id @default(auto()) @map("_id") @db.ObjectId
+  incomeTaaxAmount Int
+  paid             Boolean          @default(false)
+  createdAt        DateTime         @default(now())
+  paidAt           DateTime?
+  paymentMethod    PaymentMethod?
+  chequeNumber     String?
+  PaymentDetails   PaymentDetails[]
+  updatedAt        DateTime         @updatedAt
+
+  @@index([paid])
+  @@index([paidAt])
+}
+
+model LabourWelfareCess {
+  id                   String           @id @default(auto()) @map("_id") @db.ObjectId
+  labourWelfarecessAmt Int
+  paid                 Boolean          @default(false)
+  createdAt            DateTime         @default(now())
+  updatedAt            DateTime         @updatedAt
+  PaymentDetails       PaymentDetails[]
+
+  @@index([paid])
+}
+
+model TdsCgst {
+  id             String           @id @default(auto()) @map("_id") @db.ObjectId
+  tdscgstAmt     Int
+  paid           Boolean          @default(false)
+  createdAt      DateTime         @default(now())
+  updatedAt      DateTime         @updatedAt
+  PaymentDetails PaymentDetails[]
+
+  @@index([paid])
+}
+
+model TdsSgst {
+  id             String           @id @default(auto()) @map("_id") @db.ObjectId
+  tdsSgstAmt     Int
+  paid           Boolean          @default(false)
+  createdAt      DateTime         @default(now())
+  updatedAt      DateTime         @updatedAt
+  PaymentDetails PaymentDetails[]
+
+  @@index([paid])
+}
+
+model AggrementModel {
+  id                          String                    @id @default(auto()) @map("_id") @db.ObjectId
+  aggrementno                 String
+  aggrementdate               DateTime
+  workdetails                 ApprovedActionPlanDetails @relation(fields: [approvedActionPlanDetailsId], references: [id])
+  acceptagency                Bidagency                 @relation(fields: [bidagencyId], references: [id])
+  approvedActionPlanDetailsId String                    @db.ObjectId
+  bidagencyId                 String                    @db.ObjectId
+  createdAt                   DateTime                  @default(now())
+  updatedAt                   DateTime                  @updatedAt
+
+  @@index([approvedActionPlanDetailsId])
+  @@index([bidagencyId])
+  @@index([aggrementno])
+  @@index([aggrementdate])
+}
+
+// Additional models referenced in the schema
+model Document {
+  id           String     @id @default(auto()) @map("_id") @db.ObjectId
+  name         String
+  url          String
+  type         String
+  nitDetails   NitDetails @relation(fields: [nitDetailsId], references: [id])
+  nitDetailsId String     @db.ObjectId
+  createdAt    DateTime   @default(now())
+  updatedAt    DateTime   @updatedAt
+
+  @@index([nitDetailsId])
+  @@index([type])
+}
+
+model Bid {
+  id              String        @id @default(auto()) @map("_id") @db.ObjectId
+  agencyDetails   AgencyDetails @relation(fields: [agencyDetailsId], references: [id])
+  agencyDetailsId String        @db.ObjectId
+  amount          Int
+  createdAt       DateTime      @default(now())
+  updatedAt       DateTime      @updatedAt
+
+  @@index([agencyDetailsId])
+  @@index([amount])
+}
+
+model Order {
+  id              String        @id @default(auto()) @map("_id") @db.ObjectId
+  agencyDetails   AgencyDetails @relation(fields: [agencyDetailsId], references: [id])
+  agencyDetailsId String        @db.ObjectId
+  orderNumber     String
+  orderDate       DateTime
+  amount          Int
+  createdAt       DateTime      @default(now())
+  updatedAt       DateTime      @updatedAt
+
+  @@index([agencyDetailsId])
+  @@index([orderNumber])
+  @@index([orderDate])
+}
+
+model WorkOrderCancellation {
+  id            String      @id @default(auto()) @map("_id") @db.ObjectId
+  worksDetail   WorksDetail @relation(fields: [worksDetailId], references: [id])
+  worksDetailId String      @db.ObjectId
+  reason        String
+  cancelledAt   DateTime    @default(now())
+  createdAt     DateTime    @default(now())
+  updatedAt     DateTime    @updatedAt
+
+  @@index([worksDetailId])
+  @@index([cancelledAt])
+}
+
+model AOC {
+  id            String      @id @default(auto()) @map("_id") @db.ObjectId
+  worksDetail   WorksDetail @relation(fields: [worksDetailId], references: [id])
+  worksDetailId String      @db.ObjectId
+  aocNumber     String
+  aocDate       DateTime
+  createdAt     DateTime    @default(now())
+  updatedAt     DateTime    @updatedAt
+
+  @@index([worksDetailId])
+  @@index([aocNumber])
+  @@index([aocDate])
 }
