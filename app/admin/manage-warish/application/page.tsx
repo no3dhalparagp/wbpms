@@ -1,6 +1,6 @@
 import WarishFormComponent from "@/components/WarishForm";
 
-const Page = async () => {
+const Page = () => {
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-50 to-blue-50 py-4 px-4 sm:px-4 lg:px-4">
       <div className="mx-auto">

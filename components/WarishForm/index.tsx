@@ -259,7 +259,42 @@ export default function WarishFormComponent() {
 
       console.log("Submitting form in step 3");
       startTransition(async () => {
-        
+        try {
+          const response = await fetch("/api/warish/submit", {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+            },
+            body: JSON.stringify(data),
+          });
+
+          if (!response.ok) {
+            throw new Error("Failed to submit form");
+          }
+
+          const result = await response.json();
+          setAcnumber(result.applicationNumber);
+
+          toast({
+            title: "Success!",
+            description: "Your application has been submitted successfully.",
+            variant: "default",
+          });
+
+          // Reset form and redirect after 3 seconds
+          setTimeout(() => {
+            resetForm();
+            router.push("/admin/manage-warish");
+          }, 3000);
+        } catch (error) {
+          console.error("Error submitting form:", error);
+          toast({
+            title: "Error",
+            description: "Failed to submit application. Please try again.",
+            variant: "destructive",
+          });
+        }
+      });
     },
     [step, startTransition, toast, resetForm, router]
   );
@@ -341,8 +376,8 @@ export default function WarishFormComponent() {
                         step === stepData.number
                           ? "bg-primary border-primary text-white"
                           : step > stepData.number
-                            ? "bg-primary border-primary text-white"
-                            : "bg-white border-gray-300"
+                          ? "bg-primary border-primary text-white"
+                          : "bg-white border-gray-300"
                       )}
                     >
                       {step > stepData.number ? (
