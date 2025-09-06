@@ -13,7 +13,7 @@ import { useRouter } from "next/navigation";
 import { useToast } from "@/components/ui/use-toast";
 import { Button } from "@/components/ui/button";
 import { Form } from "@/components/ui/form";
-import { createNestedWarishDetails } from "@/action/warishApplicationAction";
+
 import {
   warishFormSchema,
   type WarishFormValuesType,
@@ -259,34 +259,7 @@ export default function WarishFormComponent() {
 
       console.log("Submitting form in step 3");
       startTransition(async () => {
-        try {
-          const result = await createNestedWarishDetails(data);
-          if (result?.errors) {
-            toast({
-              title: "Error / ত্রুটি",
-              description: result.message,
-              variant: "destructive",
-            });
-          } else if (result?.success) {
-            resetForm();
-            toast({
-              title: "Success / সফল",
-              description: result.data?.acknowlegment?.toString(),
-            });
-            setAcnumber(result.data?.acknowlegment?.toString() || "");
-          }
-        } catch (error) {
-          console.error("Failed to add warish details:", error);
-          toast({
-            title: "Error / ত্রুটি",
-            description:
-              "An unexpected error occurred. Please try again. / একটি অপ্রত্যাশিত ত্রুটি ঘটেছে। অনুগ্রহ করে আবার চেষ্টা করুন।",
-            variant: "destructive",
-          });
-        } finally {
-          router.refresh();
-        }
-      });
+        
     },
     [step, startTransition, toast, resetForm, router]
   );
@@ -368,8 +341,8 @@ export default function WarishFormComponent() {
                         step === stepData.number
                           ? "bg-primary border-primary text-white"
                           : step > stepData.number
-                          ? "bg-primary border-primary text-white"
-                          : "bg-white border-gray-300"
+                            ? "bg-primary border-primary text-white"
+                            : "bg-white border-gray-300"
                       )}
                     >
                       {step > stepData.number ? (
