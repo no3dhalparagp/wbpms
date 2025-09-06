@@ -148,7 +148,8 @@ export function RoleSpecificMenu() {
   }
 
   const renderMenuItem = (item: MenuItemProps, depth = 0, parentPath = '') => {
-    const hasSubmenu = item.submenu && item.subMenuItems.length > 0
+    // Fixed: Check if item has submenu AND has subMenuItems with length > 0
+    const hasSubmenu = item.submenu && item.subMenuItems && item.subMenuItems.length > 0;
     const paddingLeft = depth * 16
     const itemKey = `${parentPath}-${item.menuItemText}`
 
