@@ -1,4 +1,4 @@
-import WarishForm from "@/components/form/WarishForm";
+import WarishFormComponent from "@/components/WarishForm";
 
 const Page = async () => {
   return (
@@ -16,7 +16,7 @@ const Page = async () => {
         </div>
 
         <div className="bg-white rounded-xl shadow-lg p-2 sm:p-2 border border-gray-100 transition-all hover:shadow-xl">
-          <WarishForm />
+          <WarishFormComponent />
         </div>
       </div>
     </div>
