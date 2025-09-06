@@ -1,0 +1,135 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mongodb"
+  url      = env("DATABASE_URL")
+}
+
+enum Role {
+  STAFF
+  ADMIN
+  SUPER_ADMIN
+}
+
+model Account {
+  id                String  @id @default(auto()) @map("_id") @db.ObjectId
+  userId            String  @db.ObjectId
+  type              String
+  provider          String
+  providerAccountId String
+  refresh_token     String?
+  access_token      String?
+  expires_at        Int?
+  token_type        String?
+  scope             String?
+  id_token          String?
+  session_state     String?
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([provider, providerAccountId])
+}
+
+model Session {
+  id           String   @id @default(auto()) @map("_id") @db.ObjectId
+  sessionToken String   @unique
+  userId       String   @db.ObjectId
+  expires      DateTime
+  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model User {
+  id              String         @id @default(auto()) @map("_id") @db.ObjectId
+  name            String?
+  email           String         @unique
+  emailVerified   DateTime?
+  image           String?
+  password        String?        // Added password field for credentials auth
+  role            Role           @default(STAFF)
+  isActive        Boolean        @default(true)
+  gramPanchayatId String?        @db.ObjectId  // GP association
+  designation     String?        // Job designation (Clerk, Secretary, etc.)
+  employeeId      String?        // Government employee ID
+  phoneNumber     String?        // Contact number
+  aadharNumber    String?        // Aadhar number (masked)
+  joiningDate     DateTime?      // Date of joining
+  createdAt       DateTime       @default(now())
+  updatedAt       DateTime       @updatedAt
+
+  accounts        Account[]
+  sessions        Session[]
+  gramPanchayat   GramPanchayat? @relation(fields: [gramPanchayatId], references: [id])
+
+  @@map("users")
+}
+
+model GramPanchayat {
+  id            String   @id @default(auto()) @map("_id") @db.ObjectId
+  name          String
+  code          String   @unique  // GP code assigned by government
+  state         String
+  district      String
+  block         String
+  pincode       String?
+  address       String?
+  population    Int?
+  area          Float?   // in sq km
+  sarpanchName  String?  // Elected head of GP
+  secretaryName String?  // GP Secretary
+  phoneNumber   String?
+  email         String?
+  isActive      Boolean  @default(true)
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+  
+  // Relations
+  users         User[]
+  villages      Village[]
+  wards         Ward[]
+  
+  @@map("gram_panchayats")
+}
+
+model Village {
+  id              String        @id @default(auto()) @map("_id") @db.ObjectId
+  name            String
+  code            String?       // Village code
+  gramPanchayatId String        @db.ObjectId
+  population      Int?
+  area            Float?        // in sq km
+  isActive        Boolean       @default(true)
+  createdAt       DateTime      @default(now())
+  updatedAt       DateTime      @updatedAt
+  
+  gramPanchayat   GramPanchayat @relation(fields: [gramPanchayatId], references: [id])
+  
+  @@map("villages")
+}
+
+model Ward {
+  id              String        @id @default(auto()) @map("_id") @db.ObjectId
+  number          Int
+  name            String?
+  gramPanchayatId String        @db.ObjectId
+  population      Int?
+  area            Float?
+  isActive        Boolean       @default(true)
+  createdAt       DateTime      @default(now())
+  updatedAt       DateTime      @updatedAt
+  
+  gramPanchayat   GramPanchayat @relation(fields: [gramPanchayatId], references: [id])
+  
+  @@unique([gramPanchayatId, number])
+  @@map("wards")
+}
+
+model VerificationToken {
+  id         String   @id @default(auto()) @map("_id") @db.ObjectId
+  identifier String
+  token      String   @unique
+  expires    DateTime
+
+  @@unique([identifier, token])
+}
