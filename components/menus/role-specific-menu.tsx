@@ -19,6 +19,7 @@ interface MenuSection {
 export function RoleSpecificMenu() {
   const { data: session } = useSession()
   const [openSections, setOpenSections] = useState<Record<string, boolean>>({})
+  const [openMenuItems, setOpenMenuItems] = useState<Record<string, boolean>>({})
 
   if (!session?.user) return null
 
@@ -26,6 +27,13 @@ export function RoleSpecificMenu() {
     setOpenSections((prev) => ({
       ...prev,
       [sectionTitle]: !prev[sectionTitle],
+    }))
+  }
+
+  const toggleMenuItem = (key: string) => {
+    setOpenMenuItems(prev => ({
+      ...prev,
+      [key]: !prev[key]
     }))
   }
 
@@ -139,13 +147,19 @@ export function RoleSpecificMenu() {
     return sections
   }
 
-  const renderMenuItem = (item: MenuItemProps, depth = 0) => {
+  const renderMenuItem = (item: MenuItemProps, depth = 0, parentPath = '') => {
     const hasSubmenu = item.submenu && item.subMenuItems.length > 0
     const paddingLeft = depth * 16
+    const itemKey = `${parentPath}-${item.menuItemText}`
 
     if (hasSubmenu) {
       return (
-        <Collapsible key={item.menuItemText}>
+        <Collapsible
+          key={itemKey}
+          open={openMenuItems[itemKey]}
+          onOpenChange={() => toggleMenuItem(itemKey)}
+          className="w-full"
+        >
           <CollapsibleTrigger asChild>
             <Button
               variant="ghost"
@@ -156,11 +170,17 @@ export function RoleSpecificMenu() {
                 {item.Icon && <item.Icon className="h-4 w-4" />}
                 <span className="text-sm">{item.menuItemText}</span>
               </div>
-              <ChevronDown className="h-3 w-3" />
+              {openMenuItems[itemKey] ? (
+                <ChevronDown className="h-3 w-3" />
+              ) : (
+                <ChevronRight className="h-3 w-3" />
+              )}
             </Button>
           </CollapsibleTrigger>
           <CollapsibleContent className="space-y-1">
-            {item.subMenuItems.map((subItem) => renderMenuItem(subItem, depth + 1))}
+            {item.subMenuItems.map((subItem) => 
+              renderMenuItem(subItem, depth + 1, itemKey)
+            )}
           </CollapsibleContent>
         </Collapsible>
       )
@@ -168,7 +188,7 @@ export function RoleSpecificMenu() {
 
     return (
       <Button
-        key={item.menuItemText}
+        key={itemKey}
         asChild
         variant="ghost"
         className="w-full justify-start h-auto p-2"
