@@ -16,8 +16,6 @@ async function getAllUsers() {
       gramPanchayatId: true,
       designation: true,
       employeeId: true,
-    },
-    include: {
       gramPanchayat: {
         select: {
           name: true,
