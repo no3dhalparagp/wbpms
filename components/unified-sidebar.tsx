@@ -17,7 +17,8 @@ import {
 } from "@/constants/menu-constants"
 import type { RootState } from "@/redux/store"
 import { toggleMenu } from "@/redux/slices/menuSlice"
-import ImprovedFooter from "../improved-footer"
+import ImprovedFooter from "./improved-footer"
+
 
 // Types
 type Role = "user" | "admin" | "staff" | "superadmin"
