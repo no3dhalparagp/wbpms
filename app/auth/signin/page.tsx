@@ -1,56 +1,63 @@
-"use client"
+"use client";
 
-import type React from "react"
+import type React from "react";
 
-import { signIn, useSession } from "next-auth/react"
-import { useRouter } from "next/navigation"
-import { useEffect, useState } from "react"
-import Link from "next/link"
-import { Button } from "@/components/ui/button"
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
-import { Input } from "@/components/ui/input"
-import { Label } from "@/components/ui/label"
-import { Alert, AlertDescription } from "@/components/ui/alert"
-import { Checkbox } from "@/components/ui/checkbox"
-import { Eye, EyeOff } from "lucide-react"
+import { signIn, useSession } from "next-auth/react";
+import { useRouter } from "next/navigation";
+import { useEffect, useState } from "react";
+import Link from "next/link";
+import { Button } from "@/components/ui/button";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Alert, AlertDescription } from "@/components/ui/alert";
+import { Checkbox } from "@/components/ui/checkbox";
+import { Eye, EyeOff } from "lucide-react";
 
 export default function SignIn() {
-  const router = useRouter()
-  const [isLoading, setIsLoading] = useState(false)
-  const [showPassword, setShowPassword] = useState(false)
-  const [error, setError] = useState("")
+  const router = useRouter();
+  const [isLoading, setIsLoading] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
+  const [error, setError] = useState("");
   const [formData, setFormData] = useState({
     email: "",
     password: "",
     rememberMe: false,
-  })
-  const { data: session, status } = useSession()
+  });
+  const { data: session, status } = useSession();
 
   useEffect(() => {
-    if (status === "loading") return
+    if (status === "loading") return;
 
     if (session) {
       // Role-based redirect
       switch (session.user.role) {
         case "SUPER_ADMIN":
-          router.push("/super-admin")
-          break
+          router.push("/dashboard");
+          break;
         case "ADMIN":
-          router.push("/admin")
-          break
+          router.push("/admin");
+          break;
         case "STAFF":
-          router.push("/staff")
-          break
+          router.push("/staff");
+          break;
         default:
-          router.push("/dashboard")
+          router.push("/");
+          break;
       }
     }
-  }, [session, status, router])
+  }, [session, status, router]);
 
   const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault()
-    setIsLoading(true)
-    setError("")
+    e.preventDefault();
+    setIsLoading(true);
+    setError("");
 
     try {
       const result = await signIn("credentials", {
@@ -58,42 +65,44 @@ export default function SignIn() {
         password: formData.password,
         rememberMe: formData.rememberMe,
         redirect: false,
-      })
+      });
 
       if (result?.error) {
         switch (result.error) {
           case "CredentialsSignin":
-            setError("Invalid email or password")
-            break
+            setError("Invalid email or password");
+            break;
           case "AccessDenied":
-            setError("Your account is inactive. Please contact an administrator.")
-            break
+            setError(
+              "Your account is inactive. Please contact an administrator."
+            );
+            break;
           case "Verification":
-            setError("Please verify your email address before signing in.")
-            break
+            setError("Please verify your email address before signing in.");
+            break;
           default:
-            setError("An error occurred during sign in. Please try again.")
+            setError("An error occurred during sign in. Please try again.");
         }
       } else if (result?.ok) {
         // The useEffect will handle the role-based redirect
         // No need to redirect here as the session will be updated
       } else {
-        setError("An unexpected error occurred. Please try again.")
+        setError("An unexpected error occurred. Please try again.");
       }
     } catch (error) {
-      console.error("Sign in error:", error)
-      setError("An error occurred during sign in. Please try again.")
+      console.error("Sign in error:", error);
+      setError("An error occurred during sign in. Please try again.");
     } finally {
-      setIsLoading(false)
+      setIsLoading(false);
     }
-  }
+  };
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setFormData((prev) => ({
       ...prev,
       [e.target.name]: e.target.value,
-    }))
-  }
+    }));
+  };
 
   // Show loading state while checking session
   if (status === "loading") {
@@ -101,7 +110,7 @@ export default function SignIn() {
       <div className="min-h-screen flex items-center justify-center bg-background p-4">
         <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
       </div>
-    )
+    );
   }
 
   return (
@@ -109,7 +118,9 @@ export default function SignIn() {
       <Card className="w-full max-w-md">
         <CardHeader className="text-center">
           <CardTitle className="text-2xl font-bold">Welcome Back</CardTitle>
-          <CardDescription>Sign in to your account to access the dashboard</CardDescription>
+          <CardDescription>
+            Sign in to your account to access the dashboard
+          </CardDescription>
         </CardHeader>
         <CardContent>
           <form onSubmit={handleSubmit} className="space-y-4">
@@ -154,7 +165,11 @@ export default function SignIn() {
                   onClick={() => setShowPassword(!showPassword)}
                   disabled={isLoading}
                 >
-                  {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                  {showPassword ? (
+                    <EyeOff className="h-4 w-4" />
+                  ) : (
+                    <Eye className="h-4 w-4" />
+                  )}
                 </Button>
               </div>
             </div>
@@ -171,12 +186,20 @@ export default function SignIn() {
                 }
                 disabled={isLoading}
               />
-              <Label htmlFor="rememberMe" className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70">
+              <Label
+                htmlFor="rememberMe"
+                className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
+              >
                 Remember me
               </Label>
             </div>
 
-            <Button type="submit" disabled={isLoading} className="w-full" size="lg">
+            <Button
+              type="submit"
+              disabled={isLoading}
+              className="w-full"
+              size="lg"
+            >
               {isLoading ? "Signing in..." : "Sign In"}
             </Button>
           </form>
@@ -186,7 +209,9 @@ export default function SignIn() {
               <span className="w-full border-t" />
             </div>
             <div className="relative flex justify-center text-xs uppercase">
-              <span className="bg-background px-2 text-muted-foreground">Or continue with</span>
+              <span className="bg-background px-2 text-muted-foreground">
+                Or continue with
+              </span>
             </div>
           </div>
 
@@ -221,7 +246,10 @@ export default function SignIn() {
           <div className="mt-6 text-center">
             <p className="text-sm text-muted-foreground">
               Don't have an account?{" "}
-              <Link href="/auth/signup" className="text-primary hover:underline">
+              <Link
+                href="/auth/signup"
+                className="text-primary hover:underline"
+              >
                 Sign up
               </Link>
             </p>
@@ -233,5 +261,5 @@ export default function SignIn() {
         </CardContent>
       </Card>
     </div>
-  )
+  );
 }

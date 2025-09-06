@@ -2,39 +2,18 @@
 
 import { useSession } from "next-auth/react"
 import { Button } from "@/components/ui/button"
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible"
 import Link from "next/link"
 import { useState } from "react"
-import {
-  LayoutDashboard,
-  User,
-  CheckSquare,
-  MapPin,
-  Settings,
-  UserCog,
-  Building,
-  FileText,
-  Shield,
-  Users,
-  Globe,
-  Cog,
-  Activity,
-  ChevronRight,
-  ChevronDown,
-} from "lucide-react"
+import { ChevronRight, ChevronDown } from "lucide-react"
+import { adminMenuItems, employeeMenuItems, superAdminMenuItems, type MenuItemProps } from "@/constants/menu-constants"
 
 interface MenuSection {
   title: string
   description: string
-  items: {
-    name: string
-    href: string
-    icon: any
-    description: string
-    badge?: string
-  }[]
+  items: MenuItemProps[]
 }
 
 export function RoleSpecificMenu() {
@@ -44,133 +23,165 @@ export function RoleSpecificMenu() {
   if (!session?.user) return null
 
   const toggleSection = (sectionTitle: string) => {
-    setOpenSections(prev => ({
+    setOpenSections((prev) => ({
       ...prev,
-      [sectionTitle]: !prev[sectionTitle]
+      [sectionTitle]: !prev[sectionTitle],
     }))
   }
 
   const getMenuSections = (role: string): MenuSection[] => {
+    const normalizedRole = role.toUpperCase() as "ADMIN" | "STAFF" | "SUPER_ADMIN"
+    let menuItems: MenuItemProps[] = []
+
+    // Get menu items based on role
+    switch (normalizedRole) {
+      case "ADMIN":
+        menuItems = adminMenuItems
+        break
+      case "STAFF":
+        menuItems = employeeMenuItems
+        break
+      case "SUPER_ADMIN":
+        menuItems = superAdminMenuItems
+        break
+      default:
+        menuItems = []
+    }
+
+    const filteredItems = menuItems.filter((item) => item.allowedRoles.includes(normalizedRole))
+
+    // Group items into sections
     const sections: MenuSection[] = []
 
-    // Common sections for all roles
-    sections.push({
-      title: "Dashboard",
-      description: "Overview and quick access",
-      items: [
-        {
-          name: "Main Dashboard",
-          href: "/dashboard",
-          icon: LayoutDashboard,
-          description: "System overview and statistics",
-        },
-      ],
-    })
-
-    // Staff-specific sections
-    if (["STAFF", "ADMIN", "SUPER_ADMIN"].includes(role)) {
+    // Dashboard section
+    const dashboardItems = filteredItems.filter((item) => item.menuItemText.toLowerCase().includes("dashboard"))
+    if (dashboardItems.length > 0) {
       sections.push({
-        title: "My Workspace",
-        description: "Personal tools and information",
-        items: [
-          {
-            name: "My Profile",
-            href: "/staff/profile",
-            icon: User,
-            description: "Personal information and settings",
-          },
-          {
-            name: "My Tasks",
-            href: "/staff/tasks",
-            icon: CheckSquare,
-            description: "Assigned tasks and activities",
-            badge: "New",
-          },
-          {
-            name: "GP Information",
-            href: "/staff/gram-panchayat",
-            icon: MapPin,
-            description: "Gram Panchayat details and data",
-          },
-        ],
+        title: "Dashboard",
+        description: "Overview and quick access",
+        items: dashboardItems,
       })
     }
 
-    // Admin-specific sections
-    if (["ADMIN", "SUPER_ADMIN"].includes(role)) {
+    // Certificate Management section
+    const certificateItems = filteredItems.filter((item) => item.menuItemText.toLowerCase().includes("certificate"))
+    if (certificateItems.length > 0) {
+      sections.push({
+        title: "Certificate Management",
+        description: "Certificate processing and management tools",
+        items: certificateItems,
+      })
+    }
+
+    // Operations section
+    const operationItems = filteredItems.filter(
+      (item) =>
+        item.menuItemText.toLowerCase().includes("operation") ||
+        item.menuItemText.toLowerCase().includes("work") ||
+        item.menuItemText.toLowerCase().includes("meeting"),
+    )
+    if (operationItems.length > 0) {
+      sections.push({
+        title: "Operations",
+        description: "Work management and operational tools",
+        items: operationItems,
+      })
+    }
+
+    // Financial section
+    const financialItems = filteredItems.filter(
+      (item) =>
+        item.menuItemText.toLowerCase().includes("financial") ||
+        item.menuItemText.toLowerCase().includes("payment") ||
+        item.menuItemText.toLowerCase().includes("procurement"),
+    )
+    if (financialItems.length > 0) {
+      sections.push({
+        title: "Financial Management",
+        description: "Financial services and procurement tools",
+        items: financialItems,
+      })
+    }
+
+    // Administration section
+    const adminItems = filteredItems.filter(
+      (item) =>
+        item.menuItemText.toLowerCase().includes("system") ||
+        item.menuItemText.toLowerCase().includes("user") ||
+        item.menuItemText.toLowerCase().includes("vendor") ||
+        item.menuItemText.toLowerCase().includes("village"),
+    )
+    if (adminItems.length > 0) {
       sections.push({
         title: "Administration",
-        description: "Management and control tools",
-        items: [
-          {
-            name: "Admin Panel",
-            href: "/admin",
-            icon: Settings,
-            description: "Administrative controls and settings",
-          },
-          {
-            name: "Manage Staff",
-            href: "/admin/users",
-            icon: UserCog,
-            description: "Staff management and role assignment",
-          },
-          {
-            name: "GP Management",
-            href: "/admin/gram-panchayats",
-            icon: Building,
-            description: "Gram Panchayat administration",
-          },
-          {
-            name: "Reports",
-            href: "/admin/reports",
-            icon: FileText,
-            description: "Generate and view detailed reports",
-          },
-        ],
+        description: "System administration and user management",
+        items: adminItems,
       })
     }
 
-    // Super Admin-specific sections
-    if (role === "SUPER_ADMIN") {
+    // Other items
+    const otherItems = filteredItems.filter(
+      (item) =>
+        !dashboardItems.includes(item) &&
+        !certificateItems.includes(item) &&
+        !operationItems.includes(item) &&
+        !financialItems.includes(item) &&
+        !adminItems.includes(item),
+    )
+    if (otherItems.length > 0) {
       sections.push({
-        title: "System Administration",
-        description: "Complete system control and monitoring",
-        items: [
-          {
-            name: "Super Admin Panel",
-            href: "/super-admin",
-            icon: Shield,
-            description: "System-wide administration",
-          },
-          {
-            name: "All Users",
-            href: "/super-admin/users",
-            icon: Users,
-            description: "Complete user management across all GPs",
-          },
-          {
-            name: "All Gram Panchayats",
-            href: "/super-admin/gram-panchayats",
-            icon: Globe,
-            description: "System-wide GP management",
-          },
-          {
-            name: "System Settings",
-            href: "/super-admin/settings",
-            icon: Cog,
-            description: "Global system configuration",
-          },
-          {
-            name: "Audit Logs",
-            href: "/super-admin/audit",
-            icon: Activity,
-            description: "System activity monitoring and logs",
-          },
-        ],
+        title: "Other Services",
+        description: "Additional tools and resources",
+        items: otherItems,
       })
     }
 
     return sections
+  }
+
+  const renderMenuItem = (item: MenuItemProps, depth = 0) => {
+    const hasSubmenu = item.submenu && item.subMenuItems.length > 0
+    const paddingLeft = depth * 16
+
+    if (hasSubmenu) {
+      return (
+        <Collapsible key={item.menuItemText}>
+          <CollapsibleTrigger asChild>
+            <Button
+              variant="ghost"
+              className="w-full justify-between h-auto p-2 text-left"
+              style={{ paddingLeft: `${paddingLeft + 8}px` }}
+            >
+              <div className="flex items-center space-x-2">
+                {item.Icon && <item.Icon className="h-4 w-4" />}
+                <span className="text-sm">{item.menuItemText}</span>
+              </div>
+              <ChevronDown className="h-3 w-3" />
+            </Button>
+          </CollapsibleTrigger>
+          <CollapsibleContent className="space-y-1">
+            {item.subMenuItems.map((subItem) => renderMenuItem(subItem, depth + 1))}
+          </CollapsibleContent>
+        </Collapsible>
+      )
+    }
+
+    return (
+      <Button
+        key={item.menuItemText}
+        asChild
+        variant="ghost"
+        className="w-full justify-start h-auto p-2"
+        style={{ paddingLeft: `${paddingLeft + 8}px` }}
+      >
+        <Link href={item.menuItemLink || "#"}>
+          <div className="flex items-center space-x-2">
+            {item.Icon && <item.Icon className={`h-4 w-4 ${item.color || ""}`} />}
+            <span className="text-sm">{item.menuItemText}</span>
+          </div>
+        </Link>
+      </Button>
+    )
   }
 
   const menuSections = getMenuSections(session.user.role)
@@ -185,34 +196,27 @@ export function RoleSpecificMenu() {
         </div>
         <Badge
           variant={
-            session.user.role === "SUPER_ADMIN"
+            session.user.role.toUpperCase() === "SUPER_ADMIN"
               ? "destructive"
-              : session.user.role === "ADMIN"
+              : session.user.role.toUpperCase() === "ADMIN"
                 ? "default"
                 : "secondary"
           }
         >
-          {session.user.role.replace("_", " ")}
+          {session.user.role.replace("_", " ").toUpperCase()}
         </Badge>
       </div>
 
       {/* Menu Sections */}
       <div className="space-y-3">
         {menuSections.map((section, index) => {
-          const isOpen = openSections[section.title] ?? true // Default to open
+          const isOpen = openSections[section.title] ?? true
 
           return (
-            <Collapsible
-              key={index}
-              open={isOpen}
-              onOpenChange={() => toggleSection(section.title)}
-            >
+            <Collapsible key={index} open={isOpen} onOpenChange={() => toggleSection(section.title)}>
               <Card className="overflow-hidden">
                 <CollapsibleTrigger asChild>
-                  <Button
-                    variant="ghost"
-                    className="w-full h-auto p-4 justify-between hover:bg-muted/50"
-                  >
+                  <Button variant="ghost" className="w-full h-auto p-4 justify-between hover:bg-muted/50">
                     <div className="flex items-center space-x-3">
                       <div>
                         <h3 className="text-lg font-semibold text-left">{section.title}</h3>
@@ -229,37 +233,7 @@ export function RoleSpecificMenu() {
 
                 <CollapsibleContent>
                   <div className="px-4 pb-4">
-                    <div className="grid gap-2 md:grid-cols-2 lg:grid-cols-3">
-                      {section.items.map((item, itemIndex) => (
-                        <Button
-                          key={itemIndex}
-                          asChild
-                          variant="ghost"
-                          className="h-auto p-3 justify-start hover:bg-muted/50"
-                        >
-                          <Link href={item.href}>
-                            <div className="flex items-start space-x-3 w-full">
-                              <div className="flex-shrink-0 mt-0.5">
-                                <item.icon className="h-5 w-5 text-muted-foreground" />
-                              </div>
-                              <div className="flex-1 text-left min-w-0">
-                                <div className="flex items-center space-x-2 mb-1">
-                                  <span className="font-medium text-sm truncate">{item.name}</span>
-                                  {item.badge && (
-                                    <Badge variant="secondary" className="text-xs shrink-0">
-                                      {item.badge}
-                                    </Badge>
-                                  )}
-                                </div>
-                                <p className="text-xs text-muted-foreground line-clamp-2">
-                                  {item.description}
-                                </p>
-                              </div>
-                            </div>
-                          </Link>
-                        </Button>
-                      ))}
-                    </div>
+                    <div className="space-y-1">{section.items.map((item) => renderMenuItem(item))}</div>
                   </div>
                 </CollapsibleContent>
               </Card>
@@ -282,20 +256,18 @@ export function RoleSpecificMenu() {
               <div className="text-xs text-muted-foreground">Total Items</div>
             </div>
             <div className="text-center">
-              <div className="text-2xl font-bold text-blue-600">
-                {menuSections.length}
-              </div>
+              <div className="text-2xl font-bold text-blue-600">{menuSections.length}</div>
               <div className="text-xs text-muted-foreground">Sections</div>
             </div>
             <div className="text-center">
               <div className="text-2xl font-bold text-green-600">
-                {menuSections.filter(section => openSections[section.title] ?? true).length}
+                {menuSections.filter((section) => openSections[section.title] ?? true).length}
               </div>
               <div className="text-xs text-muted-foreground">Open</div>
             </div>
             <div className="text-center">
               <div className="text-2xl font-bold text-orange-600">
-                {menuSections.filter(section => !(openSections[section.title] ?? true)).length}
+                {menuSections.filter((section) => !(openSections[section.title] ?? true)).length}
               </div>
               <div className="text-xs text-muted-foreground">Collapsed</div>
             </div>
