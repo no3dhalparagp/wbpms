@@ -3,8 +3,11 @@
 import type { ReactNode } from "react"
 import { useSession } from "next-auth/react"
 import { Button } from "@/components/ui/button"
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
+import { Badge } from "@/components/ui/badge"
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible"
 import Link from "next/link"
-import { Menu, X } from "lucide-react"
+import { Menu, X, ChevronRight, ChevronDown, Home, Settings, User, Bell, LogOut } from "lucide-react"
 import { useState } from "react"
 import { adminMenuItems, employeeMenuItems, superAdminMenuItems, type MenuItemProps } from "@/constants/menu-constants"
 
@@ -15,10 +18,26 @@ interface DashboardLayoutProps {
 export function DashboardLayout({ children }: DashboardLayoutProps) {
   const { data: session } = useSession()
   const [sidebarOpen, setSidebarOpen] = useState(false)
+  const [openSections, setOpenSections] = useState<Record<string, boolean>>({})
+  const [openMenuItems, setOpenMenuItems] = useState<Record<string, boolean>>({})
 
   if (!session?.user) return null
 
-  const getNavigationByRole = (role: string): MenuItemProps[] => {
+  const toggleSection = (sectionTitle: string) => {
+    setOpenSections((prev) => ({
+      ...prev,
+      [sectionTitle]: !prev[sectionTitle],
+    }))
+  }
+
+  const toggleMenuItem = (key: string) => {
+    setOpenMenuItems(prev => ({
+      ...prev,
+      [key]: !prev[key]
+    }))
+  }
+
+  const getMenuSections = (role: string): {title: string, description: string, items: MenuItemProps[]}[] => {
     const normalizedRole = role.toUpperCase() as "ADMIN" | "STAFF" | "SUPER_ADMIN"
     let menuItems: MenuItemProps[] = []
 
@@ -37,30 +56,155 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
         menuItems = []
     }
 
-    const filteredItems = menuItems.filter((item) => item.allowedRoles.includes(normalizedRole)).slice(0, 8) // Limit to main items for sidebar
+    const filteredItems = menuItems.filter((item) => item.allowedRoles.includes(normalizedRole))
 
-    return filteredItems
+    // Group items into sections
+    const sections: {title: string, description: string, items: MenuItemProps[]}[] = []
+
+    // Dashboard section
+    const dashboardItems = filteredItems.filter((item) => item.menuItemText.toLowerCase().includes("dashboard"))
+    if (dashboardItems.length > 0) {
+      sections.push({
+        title: "Dashboard",
+        description: "Overview and quick access",
+        items: dashboardItems,
+      })
+    }
+
+    // Certificate Management section
+    const certificateItems = filteredItems.filter((item) => item.menuItemText.toLowerCase().includes("certificate"))
+    if (certificateItems.length > 0) {
+      sections.push({
+        title: "Certificate Management",
+        description: "Certificate processing and management tools",
+        items: certificateItems,
+      })
+    }
+
+    // Operations section
+    const operationItems = filteredItems.filter(
+      (item) =>
+        item.menuItemText.toLowerCase().includes("operation") ||
+        item.menuItemText.toLowerCase().includes("work") ||
+        item.menuItemText.toLowerCase().includes("meeting"),
+    )
+    if (operationItems.length > 0) {
+      sections.push({
+        title: "Operations",
+        description: "Work management and operational tools",
+        items: operationItems,
+      })
+    }
+
+    // Financial section
+    const financialItems = filteredItems.filter(
+      (item) =>
+        item.menuItemText.toLowerCase().includes("financial") ||
+        item.menuItemText.toLowerCase().includes("payment") ||
+        item.menuItemText.toLowerCase().includes("procurement"),
+    )
+    if (financialItems.length > 0) {
+      sections.push({
+        title: "Financial Management",
+        description: "Financial services and procurement tools",
+        items: financialItems,
+      })
+    }
+
+    // Administration section
+    const adminItems = filteredItems.filter(
+      (item) =>
+        item.menuItemText.toLowerCase().includes("system") ||
+        item.menuItemText.toLowerCase().includes("user") ||
+        item.menuItemText.toLowerCase().includes("vendor") ||
+        item.menuItemText.toLowerCase().includes("village"),
+    )
+    if (adminItems.length > 0) {
+      sections.push({
+        title: "Administration",
+        description: "System administration and user management",
+        items: adminItems,
+      })
+    }
+
+    // Other items
+    const otherItems = filteredItems.filter(
+      (item) =>
+        !dashboardItems.includes(item) &&
+        !certificateItems.includes(item) &&
+        !operationItems.includes(item) &&
+        !financialItems.includes(item) &&
+        !adminItems.includes(item),
+    )
+    if (otherItems.length > 0) {
+      sections.push({
+        title: "Other Services",
+        description: "Additional tools and resources",
+        items: otherItems,
+      })
+    }
+
+    return sections
   }
 
-  const navigation = getNavigationByRole(session.user.role)
+  const renderMenuItem = (item: MenuItemProps, depth = 0, parentPath = '') => {
+    const hasSubmenu = item.submenu && item.subMenuItems && item.subMenuItems.length > 0;
+    const paddingLeft = depth * 16
+    const itemKey = `${parentPath}-${item.menuItemText}`
 
-  const renderSidebarItem = (item: MenuItemProps) => {
-    return (
-      <div key={item.menuItemText} className="group">
-        <Button asChild variant="ghost" className="w-full justify-start h-auto p-3" disabled={!item.menuItemLink}>
-          <Link href={item.menuItemLink || "#"}>
-            <div className="flex items-start space-x-3">
-              {item.Icon && <item.Icon className={`h-5 w-5 mt-0.5 flex-shrink-0 ${item.color || ""}`} />}
-              <div className="flex-1 text-left">
-                <div className="font-medium text-sm">{item.menuItemText}</div>
-                {item.submenu && <div className="text-xs text-muted-foreground">{item.subMenuItems.length} items</div>}
+    if (hasSubmenu) {
+      return (
+        <Collapsible
+          key={itemKey}
+          open={openMenuItems[itemKey]}
+          onOpenChange={() => toggleMenuItem(itemKey)}
+          className="w-full"
+        >
+          <CollapsibleTrigger asChild>
+            <Button
+              variant="ghost"
+              className="w-full justify-between h-auto p-2 text-left"
+              style={{ paddingLeft: `${paddingLeft + 8}px` }}
+            >
+              <div className="flex items-center space-x-2">
+                {item.Icon && <item.Icon className="h-4 w-4" />}
+                <span className="text-sm">{item.menuItemText}</span>
               </div>
-            </div>
-          </Link>
-        </Button>
-      </div>
+              {openMenuItems[itemKey] ? (
+                <ChevronDown className="h-3 w-3" />
+              ) : (
+                <ChevronRight className="h-3 w-3" />
+              )}
+            </Button>
+          </CollapsibleTrigger>
+          <CollapsibleContent className="space-y-1">
+            {item.subMenuItems.map((subItem) => 
+              renderMenuItem(subItem, depth + 1, itemKey)
+            )}
+          </CollapsibleContent>
+        </Collapsible>
+      )
+    }
+
+    return (
+      <Button
+        key={itemKey}
+        asChild
+        variant="ghost"
+        className="w-full justify-start h-auto p-2"
+        style={{ paddingLeft: `${paddingLeft + 8}px` }}
+      >
+        <Link href={item.menuItemLink || "#"} onClick={() => setSidebarOpen(false)}>
+          <div className="flex items-center space-x-2">
+            {item.Icon && <item.Icon className={`h-4 w-4 ${item.color || ""}`} />}
+            <span className="text-sm">{item.menuItemText}</span>
+          </div>
+        </Link>
+      </Button>
     )
   }
+
+  const menuSections = getMenuSections(session.user.role)
 
   return (
     <div className="min-h-screen bg-background">
@@ -71,7 +215,7 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
 
       {/* Sidebar */}
       <div
-        className={`fixed inset-y-0 left-0 z-50 w-72 bg-card border-r transform transition-transform duration-200 ease-in-out lg:translate-x-0 ${
+        className={`fixed inset-y-0 left-0 z-50 w-80 bg-card border-r transform transition-transform duration-200 ease-in-out lg:translate-x-0 flex flex-col ${
           sidebarOpen ? "translate-x-0" : "-translate-x-full"
         }`}
       >
@@ -85,7 +229,7 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
           </Button>
         </div>
 
-        <div className="p-4">
+        <div className="flex-1 overflow-y-auto p-4">
           <div className="mb-4 p-3 bg-muted rounded-lg">
             <div className="flex items-center space-x-2">
               <div
@@ -102,14 +246,68 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
             <p className="text-xs text-muted-foreground mt-1">{session.user.name}</p>
           </div>
 
-          <nav className="space-y-1">{navigation.map((item) => renderSidebarItem(item))}</nav>
+          {/* Menu Sections */}
+          <div className="space-y-3">
+            {menuSections.map((section, index) => {
+              const isOpen = openSections[section.title] ?? true
+
+              return (
+                <Collapsible key={index} open={isOpen} onOpenChange={() => toggleSection(section.title)}>
+                  <Card className="overflow-hidden">
+                    <CollapsibleTrigger asChild>
+                      <Button variant="ghost" className="w-full h-auto p-4 justify-between hover:bg-muted/50">
+                        <div className="flex items-center space-x-3">
+                          <div>
+                            <h3 className="text-lg font-semibold text-left">{section.title}</h3>
+                            <p className="text-sm text-muted-foreground text-left">{section.description}</p>
+                          </div>
+                        </div>
+                        {isOpen ? (
+                          <ChevronDown className="h-4 w-4 text-muted-foreground" />
+                        ) : (
+                          <ChevronRight className="h-4 w-4 text-muted-foreground" />
+                        )}
+                      </Button>
+                    </CollapsibleTrigger>
+
+                    <CollapsibleContent>
+                      <div className="px-4 pb-4">
+                        <div className="space-y-1">{section.items.map((item) => renderMenuItem(item))}</div>
+                      </div>
+                    </CollapsibleContent>
+                  </Card>
+                </Collapsible>
+              )
+            })}
+          </div>
+        </div>
+
+        <div className="p-4 border-t">
+          <div className="space-y-2">
+            <Button variant="ghost" className="w-full justify-start" asChild>
+              <Link href="/profile">
+                <User className="h-4 w-4 mr-2" />
+                Profile
+              </Link>
+            </Button>
+            <Button variant="ghost" className="w-full justify-start" asChild>
+              <Link href="/settings">
+                <Settings className="h-4 w-4 mr-2" />
+                Settings
+              </Link>
+            </Button>
+            <Button variant="ghost" className="w-full justify-start text-red-500 hover:text-red-600 hover:bg-red-100">
+              <LogOut className="h-4 w-4 mr-2" />
+              Logout
+            </Button>
+          </div>
         </div>
       </div>
 
       {/* Main content */}
-      <div className="lg:pl-72">
+      <div className="lg:pl-80">
         {/* Top bar */}
-        <header className="h-16 bg-card border-b flex items-center justify-between px-4">
+        <header className="h-16 bg-card border-b flex items-center justify-between px-4 sticky top-0 z-30">
           <div className="flex items-center space-x-4">
             <Button variant="ghost" size="sm" className="lg:hidden" onClick={() => setSidebarOpen(true)}>
               <Menu className="h-4 w-4" />
@@ -127,8 +325,18 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
           </div>
 
           <div className="flex items-center space-x-4">
-            
-
+            <Button variant="ghost" size="sm">
+              <Bell className="h-4 w-4" />
+            </Button>
+            <div className="flex items-center space-x-2">
+              <div className="w-8 h-8 rounded-full bg-primary flex items-center justify-center text-primary-foreground text-sm font-medium">
+                {session.user.name?.charAt(0) || "U"}
+              </div>
+              <div className="hidden md:block">
+                <p className="text-sm font-medium">{session.user.name}</p>
+                <p className="text-xs text-muted-foreground">{session.user.role.replace("_", " ")}</p>
+              </div>
+            </div>
           </div>
         </header>
 
