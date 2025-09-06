@@ -3,11 +3,10 @@
 import type { ReactNode } from "react"
 import { useSession } from "next-auth/react"
 import { Button } from "@/components/ui/button"
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import { Badge } from "@/components/ui/badge"
+import { Card } from "@/components/ui/card"
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible"
 import Link from "next/link"
-import { Menu, X, ChevronRight, ChevronDown, Home, Settings, User, Bell, LogOut } from "lucide-react"
+import { Menu, X, ChevronRight, ChevronDown, Settings, User, Bell, LogOut } from "lucide-react"
 import { useState } from "react"
 import { adminMenuItems, employeeMenuItems, superAdminMenuItems, type MenuItemProps } from "@/constants/menu-constants"
 
@@ -31,13 +30,13 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
   }
 
   const toggleMenuItem = (key: string) => {
-    setOpenMenuItems(prev => ({
+    setOpenMenuItems((prev) => ({
       ...prev,
-      [key]: !prev[key]
+      [key]: !prev[key],
     }))
   }
 
-  const getMenuSections = (role: string): {title: string, description: string, items: MenuItemProps[]}[] => {
+  const getMenuSections = (role: string): { title: string; description: string; items: MenuItemProps[] }[] => {
     const normalizedRole = role.toUpperCase() as "ADMIN" | "STAFF" | "SUPER_ADMIN"
     let menuItems: MenuItemProps[] = []
 
@@ -59,7 +58,7 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
     const filteredItems = menuItems.filter((item) => item.allowedRoles.includes(normalizedRole))
 
     // Group items into sections
-    const sections: {title: string, description: string, items: MenuItemProps[]}[] = []
+    const sections: { title: string; description: string; items: MenuItemProps[] }[] = []
 
     // Dashboard section
     const dashboardItems = filteredItems.filter((item) => item.menuItemText.toLowerCase().includes("dashboard"))
@@ -147,8 +146,8 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
     return sections
   }
 
-  const renderMenuItem = (item: MenuItemProps, depth = 0, parentPath = '') => {
-    const hasSubmenu = item.submenu && item.subMenuItems && item.subMenuItems.length > 0;
+  const renderMenuItem = (item: MenuItemProps, depth = 0, parentPath = "") => {
+    const hasSubmenu = item.submenu && item.subMenuItems && item.subMenuItems.length > 0
     const paddingLeft = depth * 16
     const itemKey = `${parentPath}-${item.menuItemText}`
 
@@ -170,17 +169,11 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
                 {item.Icon && <item.Icon className="h-4 w-4" />}
                 <span className="text-sm">{item.menuItemText}</span>
               </div>
-              {openMenuItems[itemKey] ? (
-                <ChevronDown className="h-3 w-3" />
-              ) : (
-                <ChevronRight className="h-3 w-3" />
-              )}
+              {openMenuItems[itemKey] ? <ChevronDown className="h-3 w-3" /> : <ChevronRight className="h-3 w-3" />}
             </Button>
           </CollapsibleTrigger>
           <CollapsibleContent className="space-y-1">
-            {item.subMenuItems.map((subItem) => 
-              renderMenuItem(subItem, depth + 1, itemKey)
-            )}
+            {item.subMenuItems.map((subItem) => renderMenuItem(subItem, depth + 1, itemKey))}
           </CollapsibleContent>
         </Collapsible>
       )
