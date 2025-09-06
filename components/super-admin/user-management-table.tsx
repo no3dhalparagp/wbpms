@@ -14,10 +14,11 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
-import { MoreHorizontal, UserCheck, UserX, Shield, Users } from "lucide-react"
+import { MoreHorizontal, UserCheck, UserX, Shield, Users, Loader2 } from "lucide-react"
 import { Role } from "@prisma/client"
 import { updateUserRole, toggleUserStatus } from "@/app/actions/user-actions"
 import { useRouter } from "next/navigation"
+import { toast } from "sonner"
 
 interface User {
   id: string
@@ -32,11 +33,16 @@ interface User {
 
 interface UserManagementTableProps {
   users: User[]
+  currentUser: {
+    id: string
+    role: Role
+  }
 }
 
-export function UserManagementTable({ users }: UserManagementTableProps) {
+export function UserManagementTable({ users, currentUser }: UserManagementTableProps) {
   const router = useRouter()
   const [isLoading, setIsLoading] = useState<string | null>(null)
+  const [actionType, setActionType] = useState<"role" | "status" | null>(null)
 
   const getRoleColor = (role: Role) => {
     switch (role) {
@@ -51,27 +57,79 @@ export function UserManagementTable({ users }: UserManagementTableProps) {
     }
   }
 
+  const canModifyUser = (targetUser: User) => {
+    // SUPER_ADMIN can modify anyone
+    if (currentUser.role === "SUPER_ADMIN") return true
+    
+    // ADMIN can modify STAFF and USER but not other ADMINS or SUPER_ADMINS
+    if (currentUser.role === "ADMIN") {
+      return targetUser.role === "STAFF" || targetUser.role === "USER"
+    }
+    
+    // STAFF can only modify USERS
+    if (currentUser.role === "STAFF") {
+      return targetUser.role === "USER"
+    }
+    
+    return false
+  }
+
+  const canAssignRole = (newRole: Role) => {
+    // SUPER_ADMIN can assign any role
+    if (currentUser.role === "SUPER_ADMIN") return true
+    
+    // ADMIN can only assign STAFF and USER roles
+    if (currentUser.role === "ADMIN") {
+      return newRole === "STAFF" || newRole === "USER"
+    }
+    
+    // STAFF can only assign USER role
+    if (currentUser.role === "STAFF") {
+      return newRole === "USER"
+    }
+    
+    return false
+  }
+
   const handleRoleChange = async (userId: string, newRole: Role) => {
+    if (userId === currentUser.id) {
+      toast.error("You cannot change your own role")
+      return
+    }
+    
     setIsLoading(userId)
+    setActionType("role")
     try {
       await updateUserRole(userId, newRole)
+      toast.success("User role updated successfully")
       router.refresh()
     } catch (error) {
       console.error("Failed to update user role:", error)
+      toast.error("Failed to update user role")
     } finally {
       setIsLoading(null)
+      setActionType(null)
     }
   }
 
   const handleStatusToggle = async (userId: string) => {
+    if (userId === currentUser.id) {
+      toast.error("You cannot change your own status")
+      return
+    }
+    
     setIsLoading(userId)
+    setActionType("status")
     try {
       await toggleUserStatus(userId)
+      toast.success("User status updated successfully")
       router.refresh()
     } catch (error) {
       console.error("Failed to toggle user status:", error)
+      toast.error("Failed to update user status")
     } finally {
       setIsLoading(null)
+      setActionType(null)
     }
   }
 
@@ -116,34 +174,73 @@ export function UserManagementTable({ users }: UserManagementTableProps) {
                 <TableCell className="text-sm text-muted-foreground">{user.createdAt.toLocaleDateString()}</TableCell>
                 <TableCell className="text-right">
                   <DropdownMenu>
-                    <DropdownMenuTrigger asChild>
-                      <Button variant="ghost" className="h-8 w-8 p-0" disabled={isLoading === user.id}>
-                        <span className="sr-only">Open menu</span>
-                        <MoreHorizontal className="h-4 w-4" />
+                    <DropdownMenuTrigger asChild disabled={isLoading === user.id || !canModifyUser(user)}>
+                      <Button variant="ghost" className="h-8 w-8 p-0">
+                        {isLoading === user.id ? (
+                          <Loader2 className="h-4 w-4 animate-spin" />
+                        ) : (
+                          <>
+                            <span className="sr-only">Open menu for {user.name || user.email}</span>
+                            <MoreHorizontal className="h-4 w-4" />
+                          </>
+                        )}
                       </Button>
                     </DropdownMenuTrigger>
                     <DropdownMenuContent align="end">
-                      <DropdownMenuLabel>Actions</DropdownMenuLabel>
+                      <DropdownMenuLabel>Actions for {user.name || user.email}</DropdownMenuLabel>
                       <DropdownMenuSeparator />
 
                       {/* Role Management */}
-                      <DropdownMenuItem onClick={() => handleRoleChange(user.id, Role.STAFF)}>
-                        <Users className="mr-2 h-4 w-4" />
-                        Make Staff
-                      </DropdownMenuItem>
-                      <DropdownMenuItem onClick={() => handleRoleChange(user.id, Role.ADMIN)}>
-                        <Shield className="mr-2 h-4 w-4" />
-                        Make Admin
-                      </DropdownMenuItem>
-                      <DropdownMenuItem onClick={() => handleRoleChange(user.id, Role.SUPER_ADMIN)}>
-                        <Shield className="mr-2 h-4 w-4 text-red-600" />
-                        Make Super Admin
-                      </DropdownMenuItem>
+                      {canAssignRole(Role.STAFF) && (
+                        <DropdownMenuItem 
+                          onClick={() => handleRoleChange(user.id, Role.STAFF)}
+                          disabled={user.role === Role.STAFF || isLoading === user.id}
+                          className="flex items-center"
+                        >
+                          <Users className="mr-2 h-4 w-4" />
+                          Make Staff
+                          {isLoading === user.id && actionType === "role" && (
+                            <Loader2 className="ml-2 h-3 w-3 animate-spin" />
+                          )}
+                        </DropdownMenuItem>
+                      )}
+                      
+                      {canAssignRole(Role.ADMIN) && (
+                        <DropdownMenuItem 
+                          onClick={() => handleRoleChange(user.id, Role.ADMIN)}
+                          disabled={user.role === Role.ADMIN || isLoading === user.id}
+                          className="flex items-center"
+                        >
+                          <Shield className="mr-2 h-4 w-4" />
+                          Make Admin
+                          {isLoading === user.id && actionType === "role" && (
+                            <Loader2 className="ml-2 h-3 w-3 animate-spin" />
+                          )}
+                        </DropdownMenuItem>
+                      )}
+                      
+                      {canAssignRole(Role.SUPER_ADMIN) && (
+                        <DropdownMenuItem 
+                          onClick={() => handleRoleChange(user.id, Role.SUPER_ADMIN)}
+                          disabled={user.role === Role.SUPER_ADMIN || isLoading === user.id}
+                          className="flex items-center"
+                        >
+                          <Shield className="mr-2 h-4 w-4 text-red-600" />
+                          Make Super Admin
+                          {isLoading === user.id && actionType === "role" && (
+                            <Loader2 className="ml-2 h-3 w-3 animate-spin" />
+                          )}
+                        </DropdownMenuItem>
+                      )}
 
                       <DropdownMenuSeparator />
 
                       {/* Status Management */}
-                      <DropdownMenuItem onClick={() => handleStatusToggle(user.id)}>
+                      <DropdownMenuItem 
+                        onClick={() => handleStatusToggle(user.id)}
+                        disabled={isLoading === user.id}
+                        className="flex items-center"
+                      >
                         {user.isActive ? (
                           <>
                             <UserX className="mr-2 h-4 w-4 text-red-600" />
@@ -154,6 +251,9 @@ export function UserManagementTable({ users }: UserManagementTableProps) {
                             <UserCheck className="mr-2 h-4 w-4 text-green-600" />
                             Activate User
                           </>
+                        )}
+                        {isLoading === user.id && actionType === "status" && (
+                          <Loader2 className="ml-2 h-3 w-3 animate-spin" />
                         )}
                       </DropdownMenuItem>
                     </DropdownMenuContent>
