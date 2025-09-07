@@ -59,7 +59,7 @@ const COLORS = {
 const BASE_URLS = {
   ADMIN: "/admin",
   STAFF: "/staff",
-  SUPER_ADMIN: "/dashboard",
+  SUPER_ADMIN: "/super-admin",
 };
 
 // Enhanced helper to create menu items with allowedRoles

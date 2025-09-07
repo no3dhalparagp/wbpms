@@ -1,6 +1,7 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import React, { useState, useEffect } from "react";
+import { useSession } from "next-auth/react";
 import Link from "next/link";
 import { useSelector, useDispatch } from "react-redux";
 import { ChevronDown, ChevronUp, Menu, User } from "lucide-react";
@@ -28,29 +29,25 @@ interface DashboardConfig {
 }
 
 const DASHBOARD_CONFIG: Record<Role, DashboardConfig> = {
-  
-  admin: {
+  ADMIN: {
     title: "Admin Portal",
     items: adminMenuItems,
   },
-  staff: {
+  STAFF: {
     title: "Staff Portal",
     items: employeeMenuItems,
   },
-  superadmin: {
+  SUPER_ADMIN: {
     title: "Super Admin Portal",
     items: superAdminMenuItems,
   },
 };
 
 // Components
-function MenuItem({ item, userRole }: { item: MenuItemProps; userRole: Role }) {
-  const normalizedRole =
-    userRole === "superadmin"
-      ? "SUPER_ADMIN"
-      : (userRole.toUpperCase() as "ADMIN" | "STAFF");
+const SidebarMenuItem: React.FC<{ item: MenuItemProps; userRole: Role }> = ({ item, userRole }) => {
+  const normalizedRole = userRole;
 
-  if (userRole !== "user" && isRestrictedForRole(item, normalizedRole)) {
+  if (isRestrictedForRole(item, normalizedRole)) {
     return null;
   }
 
@@ -72,7 +69,7 @@ function MenuItem({ item, userRole }: { item: MenuItemProps; userRole: Role }) {
       </Link>
     </Button>
   );
-}
+};
 
 function SidebarContent({ role }: { role: Role }) {
   const config = DASHBOARD_CONFIG[role];
@@ -94,7 +91,7 @@ function SidebarContent({ role }: { role: Role }) {
       <ScrollArea className="flex-grow p-2">
         <nav className="space-y-1" aria-label={`${role} navigation`}>
           {config.items.map((item) => (
-            <MenuItem key={item.menuItemText} item={item} userRole={role} />
+            <SidebarMenuItem key={item.menuItemText} item={item} userRole={role} />
           ))}
         </nav>
       </ScrollArea>
@@ -104,7 +101,8 @@ function SidebarContent({ role }: { role: Role }) {
   );
 }
 
-export default function UnifiedSidebar({ role = "user" }: { role?: Role }) {
+export default function UnifiedSidebar({ role }: { role?: Role }) {
+  const { data: session } = useSession();
   const isMenuOpen = useSelector((state: RootState) => state.menu.isOpen);
   const dispatch = useDispatch();
   const [isMounted, setIsMounted] = useState(false);
@@ -120,6 +118,8 @@ export default function UnifiedSidebar({ role = "user" }: { role?: Role }) {
   };
 
   if (!isMounted) return null;
+
+  const userRole: Role = role || (session?.user?.role as Role) || "STAFF";
 
   return (
     <>
@@ -140,14 +140,14 @@ export default function UnifiedSidebar({ role = "user" }: { role?: Role }) {
             </Button>
           </SheetTrigger>
           <SheetContent side="left" className="p-0 w-64 shadow-xl border-0">
-            <SidebarContent role={role} />
+            <SidebarContent role={userRole} />
           </SheetContent>
         </Sheet>
       </div>
 
       {/* Desktop Menu */}
       <div className="hidden lg:block shadow-sm">
-        <SidebarContent role={role} />
+        <SidebarContent role={userRole} />
       </div>
     </>
   );
