@@ -148,7 +148,7 @@ const StaffDashboard = async () => {
                             asChild
                           >
                             <Link
-                              href={`/employeedashboard/warish/view-assigned/${application.id}`}
+                              href={`/staff/warish/view-assigned/${application.id}`}
                             >
                               <div className="flex items-center space-x-2">
                                 <EyeIcon className="h-4 w-4" />
