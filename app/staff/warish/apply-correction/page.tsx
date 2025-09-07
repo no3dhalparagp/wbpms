@@ -1,12 +1,12 @@
 import { Suspense } from "react";
-import { db } from "@/lib/db";
+import { prisma } from "@/lib/prisma";
 import EnhancedCorrectionSearch from "@/components/warishcorrection/enhanced-correction-search";
 import { Card, CardContent } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 
 async function CorrectionRequestsContent() {
   // Get recent requests for initial display
-  const recentRequests = await db.warishModificationRequest.findMany({
+  const recentRequests = await prisma.warishModificationRequest.findMany({
     take: 10,
     orderBy: { requestedDate: "desc" },
     include: {
