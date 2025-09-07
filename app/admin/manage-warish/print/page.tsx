@@ -1,3 +1,7 @@
+export const dynamic = "force-dynamic";
+export const revalidate = 0;
+export const runtime = "nodejs";
+
 import React from 'react'
 import { prisma } from '@/lib/prisma'
 import WarishPrintListClient from '@/components/WarishPrintListClient'

@@ -1,3 +1,7 @@
+export const dynamic = "force-dynamic";
+export const revalidate = 0;
+export const runtime = "nodejs";
+
 import { requireSuperAdmin } from "@/lib/auth-utils";
 import { prisma } from "@/lib/prisma";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -15,8 +19,7 @@ import {
 } from "lucide-react";
 import { auth } from "@/auth";
 import Link from "next/link";
-import dynamic from "next/dynamic";
-const SystemSettingsCard = dynamic(() => import("@/components/super-admin/system-settings-card"), { ssr: false });
+import SystemSettingsCard from "@/components/super-admin/system-settings-card";
 
 async function getSuperAdminStats() {
   const [
