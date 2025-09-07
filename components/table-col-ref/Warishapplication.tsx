@@ -97,7 +97,7 @@ export const warishcolref: ColumnDef<WarishApplicationProps>[] = [
         className="hover:bg-primary/10 hover:text-primary transition-all"
       >
         <Link 
-          href={`/admindashboard/manage-warish/approve/${row.original.id}`}
+          href={`/admin/manage-warish/approve/${row.original.id}`}
           className="flex items-center gap-1"
         >
           <Eye className="h-4 w-4 mr-1" />
