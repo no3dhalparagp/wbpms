@@ -17,22 +17,11 @@ export default function HomePage() {
             <Button asChild size="lg">
               <Link href="/auth/signin">Sign In</Link>
             </Button>
-            <Button asChild variant="outline" size="lg">
-              <Link href="/auth/signup">Sign Up</Link>
-            </Button>
+            
           </div>
         </div>
 
         <div className="grid md:grid-cols-3 gap-8 max-w-4xl mx-auto">
-          <Card>
-            <CardHeader>
-              <Shield className="h-8 w-8 text-primary mb-2" />
-              <CardTitle>Secure Authentication</CardTitle>
-              <CardDescription>
-                Google OAuth integration with NextAuth.js for secure and reliable authentication.
-              </CardDescription>
-            </CardHeader>
-          </Card>
 
           <Card>
             <CardHeader>
