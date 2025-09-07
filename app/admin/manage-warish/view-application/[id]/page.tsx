@@ -1,6 +1,6 @@
 import type React from "react";
 import { notFound } from "next/navigation";
-import { db } from "@/lib/db";
+import { prisma } from "@/lib/prisma";
 import type { WarishApplicationStatus } from "@prisma/client";
 import { format } from "date-fns";
 import {
@@ -47,9 +47,8 @@ import {
 import { ShowWarishDetails } from "@/components/ShowWarishDetails";
 import { VerifyAllButton } from "@/components/verify-all-button";
 
-
 const Page = async ({ params }: { params: { id: string } }) => {
-  const application = await db.warishApplication.findUnique({
+  const application = await prisma.warishApplication.findUnique({
     where: { id: params.id },
     include: {
       warishDetails: true,
