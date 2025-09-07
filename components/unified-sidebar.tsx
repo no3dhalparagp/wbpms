@@ -20,7 +20,7 @@ import { toggleMenu } from "@/redux/slices/menuSlice";
 import ImprovedFooter from "./improved-footer";
 
 // Types
-type Role = "user" | "admin" | "staff" | "superadmin";
+type Role = "admin" | "staff" | "superadmin";
 
 interface DashboardConfig {
   title: string;
@@ -28,10 +28,7 @@ interface DashboardConfig {
 }
 
 const DASHBOARD_CONFIG: Record<Role, DashboardConfig> = {
-  user: {
-    title: "User Dashboard",
-    items: [], // No specific user items in the constants, keeping empty
-  },
+  
   admin: {
     title: "Admin Portal",
     items: adminMenuItems,
