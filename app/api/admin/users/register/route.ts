@@ -61,8 +61,7 @@ export async function POST(request: NextRequest) {
     if (session.user.role === "ADMIN") {
       const adminGpId =
         session.user.gramPanchayat?.id ||
-        session.user.gramPanchayatId ||
-        session.user.gpId;
+        session.user.gramPanchayatId;
       if (!adminGpId || adminGpId !== gramPanchayatId) {
         return NextResponse.json(
           {
