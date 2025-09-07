@@ -47,7 +47,7 @@ export default function EnquiryReportForm({
           setSubmitStatus({ type: "success", message: result.message });
           setReport("");
           setTimeout(() => {
-            router.push("/employeedashboard/warish/view-assigned/");
+            router.push("/staff/warish/view-assigned/");
             router.refresh();
           }, 1000);
         } else {
