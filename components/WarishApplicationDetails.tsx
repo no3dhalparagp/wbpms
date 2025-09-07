@@ -20,7 +20,7 @@ import { Badge } from "./ui/badge";
 import { cn } from "@/lib/utils";
 
 import WarishDocumentUpload from "./warish-document-upload";
-import { CopyApplicationId } from "./copy-application-id";
+
 interface WarishApplicationDetailsProps {
   application: WarishApplicationProps;
   rootWarishDetails: WarishDetailProps[];
@@ -44,8 +44,7 @@ export default function WarishApplicationDetailsEdit({
               </CardTitle>
             </div>
 
-            <CopyApplicationId applicationId={application.acknowlegment}/>
-          
+            {application.acknowlegment}
           </div>
         </CardHeader>
 
