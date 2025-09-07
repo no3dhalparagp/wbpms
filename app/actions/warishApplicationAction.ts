@@ -205,7 +205,7 @@ export async function submitEnquiryReport(formData: FormData) {
     // );
 
     // Revalidate the cache after the operation
-    revalidatePath(`/employeedashboard/warish/view-assigned/`);
+    revalidatePath(`/staff/warish/view-assigned/`);
     return { success: true, message: "Enquiry report submitted successfully" };
   } catch (error) {
     console.error("Error submitting enquiry report:", error);
