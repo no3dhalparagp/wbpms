@@ -16,6 +16,11 @@ export const currentRole = async () => {
   return session?.user?.role;
 };
 
+export const currentgpuserlogin = async ()=>{
+  const session = await auth();
+  return session?.user?.gpid;
+}
+
 export const bidagencybyid = async (id: string) => {
   const bidder = await prisma.bidagency.findUnique({
     where: {
