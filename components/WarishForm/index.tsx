@@ -13,7 +13,7 @@ import { useRouter } from "next/navigation";
 import { useToast } from "@/components/ui/use-toast";
 import { Button } from "@/components/ui/button";
 import { Form } from "@/components/ui/form";
-import { createNestedWarishDetails } from "@/action/warishApplicationAction";
+import { createNestedWarishDetails } from "@/app/actions/warishApplicationAction";
 import {
   warishFormSchema,
   type WarishFormValuesType,
