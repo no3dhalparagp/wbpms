@@ -13,7 +13,7 @@ import { useRouter } from "next/navigation";
 import { useToast } from "@/components/ui/use-toast";
 import { Button } from "@/components/ui/button";
 import { Form } from "@/components/ui/form";
-
+import { createNestedWarishDetails } from "@/action/warishApplicationAction";
 import {
   warishFormSchema,
   type WarishFormValuesType,
@@ -260,39 +260,31 @@ export default function WarishFormComponent() {
       console.log("Submitting form in step 3");
       startTransition(async () => {
         try {
-          const response = await fetch("/api/warish/submit", {
-            method: "POST",
-            headers: {
-              "Content-Type": "application/json",
-            },
-            body: JSON.stringify(data),
-          });
-
-          if (!response.ok) {
-            throw new Error("Failed to submit form");
-          }
-
-          const result = await response.json();
-          setAcnumber(result.applicationNumber);
-
-          toast({
-            title: "Success!",
-            description: "Your application has been submitted successfully.",
-            variant: "default",
-          });
-
-          // Reset form and redirect after 3 seconds
-          setTimeout(() => {
+          const result = await createNestedWarishDetails(data);
+          if (result?.errors) {
+            toast({
+              title: "Error / ত্রুটি",
+              description: result.message,
+              variant: "destructive",
+            });
+          } else if (result?.success) {
             resetForm();
-            router.push("/admin/manage-warish");
-          }, 3000);
+            toast({
+              title: "Success / সফল",
+              description: result.data?.acknowlegment?.toString(),
+            });
+            setAcnumber(result.data?.acknowlegment?.toString() || "");
+          }
         } catch (error) {
-          console.error("Error submitting form:", error);
+          console.error("Failed to add warish details:", error);
           toast({
-            title: "Error",
-            description: "Failed to submit application. Please try again.",
+            title: "Error / ত্রুটি",
+            description:
+              "An unexpected error occurred. Please try again. / একটি অপ্রত্যাশিত ত্রুটি ঘটেছে। অনুগ্রহ করে আবার চেষ্টা করুন।",
             variant: "destructive",
           });
+        } finally {
+          router.refresh();
         }
       });
     },

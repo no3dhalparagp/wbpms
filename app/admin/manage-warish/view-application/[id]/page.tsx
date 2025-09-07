@@ -114,11 +114,11 @@ const Page = async ({ params }: { params: { id: string } }) => {
         </div>
         <Badge
           variant={getStatusVariant(
-            application.warishApplicationStatus || "pending"
+            application.warishApplicationStatus || "secondary"
           )}
           className="text-sm px-3 py-1"
         >
-          {application.warishApplicationStatus || "pending"}
+          {application.warishApplicationStatus || "secondary"}
         </Badge>
       </div>
 
