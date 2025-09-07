@@ -20,7 +20,7 @@ import { toggleMenu } from "@/redux/slices/menuSlice";
 import ImprovedFooter from "./improved-footer";
 
 // Types
-type Role = "admin" | "staff" | "superadmin";
+type Role = "ADMIN" | "STAFF" | "SUPER_ADMIN";
 
 interface DashboardConfig {
   title: string;
