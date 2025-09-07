@@ -1,4 +1,5 @@
-import { assignStaff } from "@/action/warishApplicationAction";
+
+import { assignStaff } from "@/app/actions/warishApplicationAction";
 import { NextResponse } from "next/server";
 
 export async function POST(request: Request) {
