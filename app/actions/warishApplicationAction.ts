@@ -462,7 +462,7 @@ export async function assignStaff(formData: FormData) {
       throw new Error("Failed to send notification email");
     }
 
-    revalidatePath("/admindashboard/manage-warish/asingwarishtostaff");
+    revalidatePath("/admin/manage-warish/assign-staff");
     return { success: true, message: "Staff assigned successfully" };
   } catch (error) {
     console.error("Error in assignStaff:", error);
