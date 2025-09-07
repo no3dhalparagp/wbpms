@@ -18,7 +18,7 @@ export const currentRole = async () => {
 
 export const currentgpuserlogin = async ()=>{
   const session = await auth();
-  return session?.user?.gpid;
+  return session?.user?.gramPanchayatId;
 }
 
 export const bidagencybyid = async (id: string) => {
