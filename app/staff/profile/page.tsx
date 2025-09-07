@@ -1,177 +1,356 @@
-import { requireStaff } from "@/lib/auth-utils"
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
-import { Badge } from "@/components/ui/badge"
-import { Button } from "@/components/ui/button"
-import { Mail, Calendar, Shield, User, Edit } from "lucide-react"
+"use client";
 
-export default async function StaffProfilePage() {
-  const session = await requireStaff()
+import { useState, useEffect } from "react";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Textarea } from "@/components/ui/textarea";
+import { Badge } from "@/components/ui/badge";
+import { 
+  User,
+  Mail,
+  Phone,
+  MapPin,
+  Calendar,
+  Building,
+  Save,
+  Edit,
+  Shield
+} from "lucide-react";
+import { useSession } from "next-auth/react";
+import { toast } from "sonner";
+
+interface UserProfile {
+  id: string;
+  name: string | null;
+  email: string;
+  role: string;
+  designation: string | null;
+  employeeId: string | null;
+  phoneNumber: string | null;
+  aadharNumber: string | null;
+  joiningDate: string | null;
+  gramPanchayat: {
+    name: string;
+    district: string;
+    state: string;
+  } | null;
+}
+
+export default function StaffProfilePage() {
+  const { data: session, update } = useSession();
+  const [isLoading, setIsLoading] = useState(false);
+  const [isEditing, setIsEditing] = useState(false);
+  const [profile, setProfile] = useState<UserProfile | null>(null);
+  
+  const [formData, setFormData] = useState({
+    name: '',
+    designation: '',
+    employeeId: '',
+    phoneNumber: '',
+    aadharNumber: ''
+  });
+
+  useEffect(() => {
+    if (session?.user) {
+      setProfile({
+        id: session.user.id,
+        name: session.user.name,
+        email: session.user.email,
+        role: session.user.role,
+        designation: session.user.designation || null,
+        employeeId: session.user.employeeId || null,
+        phoneNumber: session.user.phoneNumber || null,
+        aadharNumber: session.user.aadharNumber || null,
+        joiningDate: session.user.joiningDate || null,
+        gramPanchayat: session.user.gramPanchayat || null
+      });
+      
+      setFormData({
+        name: session.user.name || '',
+        designation: session.user.designation || '',
+        employeeId: session.user.employeeId || '',
+        phoneNumber: session.user.phoneNumber || '',
+        aadharNumber: session.user.aadharNumber || ''
+      });
+    }
+  }, [session]);
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setIsLoading(true);
+
+    try {
+      const response = await fetch('/api/user/profile', {
+        method: 'PATCH',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(formData),
+      });
+
+      if (response.ok) {
+        toast.success("Profile updated successfully");
+        setIsEditing(false);
+        // Update session
+        await update();
+      } else {
+        const error = await response.json();
+        toast.error(error.message || "Failed to update profile");
+      }
+    } catch (error) {
+      console.error("Error updating profile:", error);
+      toast.error("Failed to update profile");
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const getRoleColor = (role: string) => {
+    switch (role) {
+      case 'SUPER_ADMIN':
+        return 'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200';
+      case 'ADMIN':
+        return 'bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200';
+      case 'STAFF':
+        return 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200';
+      default:
+        return 'bg-gray-100 text-gray-800 dark:bg-gray-900 dark:text-gray-200';
+    }
+  };
+
+  if (!profile) {
+    return (
+      <div className="space-y-6">
+        <div>
+          <h1 className="text-3xl font-bold tracking-tight">Profile</h1>
+          <p className="text-muted-foreground">Loading profile information...</p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-6">
       <div>
         <h1 className="text-3xl font-bold tracking-tight">My Profile</h1>
-        <p className="text-muted-foreground">View and manage your account information</p>
+        <p className="text-muted-foreground">
+          Manage your personal information and account settings
+        </p>
       </div>
 
-      <div className="grid gap-6 md:grid-cols-3">
-        {/* Profile Card */}
-        <Card className="md:col-span-1">
-          <CardHeader className="text-center">
-            <Avatar className="h-24 w-24 mx-auto mb-4">
-              <AvatarImage src={session.user.image || ""} alt={session.user.name || ""} />
-              <AvatarFallback className="text-2xl">
-                {session.user.name?.charAt(0) || session.user.email?.charAt(0) || "U"}
-              </AvatarFallback>
-            </Avatar>
-            <CardTitle>{session.user.name || "No name set"}</CardTitle>
-            <CardDescription>{session.user.email}</CardDescription>
-            <Badge className="bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200 mx-auto">
-              {session.user.role.replace("_", " ")}
-            </Badge>
+      <div className="grid gap-6 lg:grid-cols-3">
+        {/* Profile Overview */}
+        <Card className="lg:col-span-1">
+          <CardHeader>
+            <CardTitle className="flex items-center">
+              <User className="mr-2 h-5 w-5" />
+              Profile Overview
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <div className="text-center">
+              <div className="w-20 h-20 bg-primary/10 rounded-full flex items-center justify-center mx-auto mb-4">
+                <User className="h-10 w-10 text-primary" />
+              </div>
+              <h3 className="font-semibold text-lg">{profile.name || 'No name'}</h3>
+              <p className="text-muted-foreground">{profile.email}</p>
+              <Badge className={getRoleColor(profile.role)}>
+                {profile.role.replace('_', ' ')}
+              </Badge>
+            </div>
+            
+            {profile.designation && (
+              <div className="pt-4 border-t">
+                <div className="flex items-center space-x-2">
+                  <Building className="h-4 w-4 text-muted-foreground" />
+                  <span className="text-sm">{profile.designation}</span>
+                </div>
+              </div>
+            )}
+            
+            {profile.gramPanchayat && (
+              <div className="flex items-center space-x-2">
+                <MapPin className="h-4 w-4 text-muted-foreground" />
+                <div className="text-sm">
+                  <div>{profile.gramPanchayat.name}</div>
+                  <div className="text-muted-foreground">
+                    {profile.gramPanchayat.district}, {profile.gramPanchayat.state}
+                  </div>
+                </div>
+              </div>
+            )}
+          </CardContent>
+        </Card>
+
+        {/* Profile Details */}
+        <Card className="lg:col-span-2">
+          <CardHeader>
+            <CardTitle className="flex items-center justify-between">
+              <span className="flex items-center">
+                <Shield className="mr-2 h-5 w-5" />
+                Personal Information
+              </span>
+              <Button
+                variant={isEditing ? "outline" : "default"}
+                size="sm"
+                onClick={() => setIsEditing(!isEditing)}
+              >
+                {isEditing ? "Cancel" : "Edit"}
+              </Button>
+            </CardTitle>
+            <CardDescription>
+              Update your personal details and contact information
+            </CardDescription>
           </CardHeader>
           <CardContent>
-            <Button className="w-full bg-transparent" variant="outline">
-              <Edit className="mr-2 h-4 w-4" />
-              Edit Profile
-            </Button>
-          </CardContent>
-        </Card>
-
-        {/* Account Details */}
-        <Card className="md:col-span-2">
-          <CardHeader>
-            <CardTitle>Account Details</CardTitle>
-            <CardDescription>Your account information and settings</CardDescription>
-          </CardHeader>
-          <CardContent className="space-y-6">
-            <div className="grid gap-4 md:grid-cols-2">
-              <div className="space-y-4">
-                <div className="flex items-center space-x-3">
-                  <User className="h-5 w-5 text-muted-foreground" />
+            {isEditing ? (
+              <form onSubmit={handleSubmit} className="space-y-4">
+                <div className="grid gap-4 md:grid-cols-2">
                   <div>
-                    <p className="text-sm font-medium">Full Name</p>
-                    <p className="text-sm text-muted-foreground">{session.user.name || "Not set"}</p>
+                    <Label htmlFor="name">Full Name</Label>
+                    <Input
+                      id="name"
+                      value={formData.name}
+                      onChange={(e) => setFormData(prev => ({ ...prev, name: e.target.value }))}
+                      placeholder="Enter your full name"
+                    />
+                  </div>
+                  
+                  <div>
+                    <Label htmlFor="designation">Designation</Label>
+                    <Input
+                      id="designation"
+                      value={formData.designation}
+                      onChange={(e) => setFormData(prev => ({ ...prev, designation: e.target.value }))}
+                      placeholder="Enter your designation"
+                    />
+                  </div>
+                  
+                  <div>
+                    <Label htmlFor="employeeId">Employee ID</Label>
+                    <Input
+                      id="employeeId"
+                      value={formData.employeeId}
+                      onChange={(e) => setFormData(prev => ({ ...prev, employeeId: e.target.value }))}
+                      placeholder="Enter employee ID"
+                    />
+                  </div>
+                  
+                  <div>
+                    <Label htmlFor="phoneNumber">Phone Number</Label>
+                    <Input
+                      id="phoneNumber"
+                      value={formData.phoneNumber}
+                      onChange={(e) => setFormData(prev => ({ ...prev, phoneNumber: e.target.value }))}
+                      placeholder="Enter phone number"
+                    />
+                  </div>
+                  
+                  <div className="md:col-span-2">
+                    <Label htmlFor="aadharNumber">Aadhar Number</Label>
+                    <Input
+                      id="aadharNumber"
+                      value={formData.aadharNumber}
+                      onChange={(e) => setFormData(prev => ({ ...prev, aadharNumber: e.target.value }))}
+                      placeholder="Enter Aadhar number"
+                    />
                   </div>
                 </div>
-                <div className="flex items-center space-x-3">
-                  <Mail className="h-5 w-5 text-muted-foreground" />
+                
+                <div className="flex justify-end space-x-4">
+                  <Button
+                    type="button"
+                    variant="outline"
+                    onClick={() => setIsEditing(false)}
+                    disabled={isLoading}
+                  >
+                    Cancel
+                  </Button>
+                  <Button type="submit" disabled={isLoading}>
+                    {isLoading ? (
+                      <>
+                        <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
+                        Saving...
+                      </>
+                    ) : (
+                      <>
+                        <Save className="h-4 w-4 mr-2" />
+                        Save Changes
+                      </>
+                    )}
+                  </Button>
+                </div>
+              </form>
+            ) : (
+              <div className="space-y-4">
+                <div className="grid gap-4 md:grid-cols-2">
                   <div>
-                    <p className="text-sm font-medium">Email Address</p>
-                    <p className="text-sm text-muted-foreground">{session.user.email}</p>
+                    <Label className="text-sm font-medium">Full Name</Label>
+                    <p className="text-sm text-muted-foreground">
+                      {profile.name || 'Not provided'}
+                    </p>
+                  </div>
+                  
+                  <div>
+                    <Label className="text-sm font-medium">Email</Label>
+                    <p className="text-sm text-muted-foreground">{profile.email}</p>
+                  </div>
+                  
+                  <div>
+                    <Label className="text-sm font-medium">Designation</Label>
+                    <p className="text-sm text-muted-foreground">
+                      {profile.designation || 'Not provided'}
+                    </p>
+                  </div>
+                  
+                  <div>
+                    <Label className="text-sm font-medium">Employee ID</Label>
+                    <p className="text-sm text-muted-foreground">
+                      {profile.employeeId || 'Not provided'}
+                    </p>
+                  </div>
+                  
+                  <div>
+                    <Label className="text-sm font-medium">Phone Number</Label>
+                    <p className="text-sm text-muted-foreground">
+                      {profile.phoneNumber || 'Not provided'}
+                    </p>
+                  </div>
+                  
+                  <div>
+                    <Label className="text-sm font-medium">Aadhar Number</Label>
+                    <p className="text-sm text-muted-foreground">
+                      {profile.aadharNumber ? 
+                        `${profile.aadharNumber.slice(0, 4)}****${profile.aadharNumber.slice(-4)}` : 
+                        'Not provided'
+                      }
+                    </p>
+                  </div>
+                  
+                  <div>
+                    <Label className="text-sm font-medium">Joining Date</Label>
+                    <p className="text-sm text-muted-foreground">
+                      {profile.joiningDate ? 
+                        new Date(profile.joiningDate).toLocaleDateString() : 
+                        'Not provided'
+                      }
+                    </p>
+                  </div>
+                  
+                  <div>
+                    <Label className="text-sm font-medium">Role</Label>
+                    <Badge className={getRoleColor(profile.role)}>
+                      {profile.role.replace('_', ' ')}
+                    </Badge>
                   </div>
                 </div>
               </div>
-              <div className="space-y-4">
-                <div className="flex items-center space-x-3">
-                  <Shield className="h-5 w-5 text-muted-foreground" />
-                  <div>
-                    <p className="text-sm font-medium">Role</p>
-                    <p className="text-sm text-muted-foreground">{session.user.role.replace("_", " ")}</p>
-                  </div>
-                </div>
-                <div className="flex items-center space-x-3">
-                  <Calendar className="h-5 w-5 text-muted-foreground" />
-                  <div>
-                    <p className="text-sm font-medium">Account Status</p>
-                    <p className="text-sm text-muted-foreground">{session.user.isActive ? "Active" : "Inactive"}</p>
-                  </div>
-                </div>
-              </div>
-            </div>
+            )}
           </CardContent>
         </Card>
       </div>
-
-      {/* Permissions and Access */}
-      <Card>
-        <CardHeader>
-          <CardTitle>Permissions & Access</CardTitle>
-          <CardDescription>What you can access with your current role</CardDescription>
-        </CardHeader>
-        <CardContent>
-          <div className="grid gap-4 md:grid-cols-2">
-            <div>
-              <h4 className="font-medium mb-3 text-green-700">Available Features</h4>
-              <ul className="space-y-2 text-sm">
-                <li className="flex items-center space-x-2">
-                  <div className="h-2 w-2 bg-green-500 rounded-full"></div>
-                  <span>View personal dashboard</span>
-                </li>
-                <li className="flex items-center space-x-2">
-                  <div className="h-2 w-2 bg-green-500 rounded-full"></div>
-                  <span>Access staff area</span>
-                </li>
-                <li className="flex items-center space-x-2">
-                  <div className="h-2 w-2 bg-green-500 rounded-full"></div>
-                  <span>Update personal profile</span>
-                </li>
-                <li className="flex items-center space-x-2">
-                  <div className="h-2 w-2 bg-green-500 rounded-full"></div>
-                  <span>View assigned tasks</span>
-                </li>
-              </ul>
-            </div>
-            <div>
-              <h4 className="font-medium mb-3 text-red-700">Restricted Features</h4>
-              <ul className="space-y-2 text-sm">
-                <li className="flex items-center space-x-2">
-                  <div className="h-2 w-2 bg-red-500 rounded-full"></div>
-                  <span>User management</span>
-                </li>
-                <li className="flex items-center space-x-2">
-                  <div className="h-2 w-2 bg-red-500 rounded-full"></div>
-                  <span>System administration</span>
-                </li>
-                <li className="flex items-center space-x-2">
-                  <div className="h-2 w-2 bg-red-500 rounded-full"></div>
-                  <span>Role modifications</span>
-                </li>
-                <li className="flex items-center space-x-2">
-                  <div className="h-2 w-2 bg-red-500 rounded-full"></div>
-                  <span>Super admin features</span>
-                </li>
-              </ul>
-            </div>
-          </div>
-        </CardContent>
-      </Card>
-
-      {/* Help and Support */}
-      <Card>
-        <CardHeader>
-          <CardTitle>Help & Support</CardTitle>
-          <CardDescription>Need assistance or have questions?</CardDescription>
-        </CardHeader>
-        <CardContent>
-          <div className="grid gap-4 md:grid-cols-3">
-            <div className="text-center p-4 border rounded-lg">
-              <h4 className="font-medium mb-2">Contact Admin</h4>
-              <p className="text-sm text-muted-foreground mb-3">
-                Reach out to administrators for role changes or system issues
-              </p>
-              <Button variant="outline" size="sm">
-                Send Message
-              </Button>
-            </div>
-            <div className="text-center p-4 border rounded-lg">
-              <h4 className="font-medium mb-2">Documentation</h4>
-              <p className="text-sm text-muted-foreground mb-3">Access user guides and system documentation</p>
-              <Button variant="outline" size="sm">
-                View Docs
-              </Button>
-            </div>
-            <div className="text-center p-4 border rounded-lg">
-              <h4 className="font-medium mb-2">Report Issue</h4>
-              <p className="text-sm text-muted-foreground mb-3">Report technical problems or bugs</p>
-              <Button variant="outline" size="sm">
-                Report Bug
-              </Button>
-            </div>
-          </div>
-        </CardContent>
-      </Card>
     </div>
-  )
+  );
 }

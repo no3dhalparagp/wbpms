@@ -1,344 +1,333 @@
-"use client"
+"use client";
 
-import { useState } from "react"
-import { useRouter } from "next/navigation"
-import { Button } from "@/components/ui/button"
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
-import { Input } from "@/components/ui/input"
-import { Label } from "@/components/ui/label"
-import { Alert, AlertDescription } from "@/components/ui/alert"
-import { Textarea } from "@/components/ui/textarea"
-import { Building, MapPin, Users, Phone, Mail } from "lucide-react"
+import { useState } from "react";
+import { useRouter } from "next/navigation";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Textarea } from "@/components/ui/textarea";
+import { 
+  ArrowLeft,
+  Save,
+  MapPin,
+  Building,
+  Phone,
+  Mail,
+  Users
+} from "lucide-react";
+import Link from "next/link";
+import { toast } from "sonner";
 
 export default function NewGramPanchayatPage() {
-    const router = useRouter()
-    const [isLoading, setIsLoading] = useState(false)
-    const [error, setError] = useState("")
-    const [success, setSuccess] = useState("")
-    const [formData, setFormData] = useState({
-        name: "",
-        code: "",
-        state: "",
-        district: "",
-        block: "",
-        pincode: "",
-        address: "",
-        population: "",
-        area: "",
-        sarpanchName: "",
-        secretaryName: "",
-        phoneNumber: "",
-        email: "",
-    })
+  const router = useRouter();
+  const [isLoading, setIsLoading] = useState(false);
+  
+  const [formData, setFormData] = useState({
+    name: '',
+    code: '',
+    state: '',
+    district: '',
+    block: '',
+    pincode: '',
+    address: '',
+    population: '',
+    area: '',
+    sarpanchName: '',
+    secretaryName: '',
+    phoneNumber: '',
+    email: ''
+  });
 
-    const handleSubmit = async (e: React.FormEvent) => {
-        e.preventDefault()
-        setIsLoading(true)
-        setError("")
-        setSuccess("")
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setIsLoading(true);
 
-        try {
-            const response = await fetch("/api/gram-panchayat/register", {
-                method: "POST",
-                headers: {
-                    "Content-Type": "application/json",
-                },
-                body: JSON.stringify({
-                    ...formData,
-                    population: formData.population ? parseInt(formData.population) : undefined,
-                    area: formData.area ? parseFloat(formData.area) : undefined,
-                }),
-            })
+    try {
+      const response = await fetch('/api/gram-panchayats', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          ...formData,
+          population: formData.population ? parseInt(formData.population) : null,
+          area: formData.area ? parseFloat(formData.area) : null
+        }),
+      });
 
-            const data = await response.json()
-
-            if (response.ok) {
-                setSuccess("Gram Panchayat created successfully!")
-                setTimeout(() => {
-                    router.push("/super-admin/gram-panchayats")
-                }, 2000)
-            } else {
-                const errorMessage = data.details
-                    ? data.details.map((detail: any) => `${detail.path.join('.')}: ${detail.message}`).join(', ')
-                    : data.error || "An error occurred during registration"
-                setError(errorMessage)
-            }
-        } catch (error) {
-            console.error("GP registration error:", error)
-            setError("An error occurred during registration. Please try again.")
-        } finally {
-            setIsLoading(false)
-        }
+      if (response.ok) {
+        toast.success("Gram Panchayat created successfully");
+        router.push('/super-admin/gram-panchayats');
+      } else {
+        const error = await response.json();
+        toast.error(error.message || "Failed to create Gram Panchayat");
+      }
+    } catch (error) {
+      console.error("Error creating Gram Panchayat:", error);
+      toast.error("Failed to create Gram Panchayat");
+    } finally {
+      setIsLoading(false);
     }
+  };
 
-    const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
-        setFormData((prev) => ({
-            ...prev,
-            [e.target.name]: e.target.value,
-        }))
-    }
-
-    return (
-        <div className="space-y-6">
-            <div>
-                <h1 className="text-3xl font-bold">Register New Gram Panchayat</h1>
-                <p className="text-muted-foreground">Add a new Gram Panchayat to the system</p>
-            </div>
-
-            <Card className="max-w-4xl">
-                <CardHeader>
-                    <CardTitle className="flex items-center gap-2">
-                        <Building className="h-5 w-5" />
-                        Gram Panchayat Information
-                    </CardTitle>
-                    <CardDescription>
-                        Enter the details of the Gram Panchayat to be registered
-                    </CardDescription>
-                </CardHeader>
-                <CardContent>
-                    <form onSubmit={handleSubmit} className="space-y-6">
-                        {error && (
-                            <Alert variant="destructive">
-                                <AlertDescription>{error}</AlertDescription>
-                            </Alert>
-                        )}
-
-                        {success && (
-                            <Alert className="border-green-200 bg-green-50 text-green-800">
-                                <AlertDescription>{success}</AlertDescription>
-                            </Alert>
-                        )}
-
-                        {/* Basic Information */}
-                        <div className="space-y-4">
-                            <h3 className="text-lg font-semibold">Basic Information</h3>
-                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                                <div className="space-y-2">
-                                    <Label htmlFor="name">Gram Panchayat Name *</Label>
-                                    <div className="relative">
-                                        <Building className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
-                                        <Input
-                                            id="name"
-                                            name="name"
-                                            placeholder="Enter GP name"
-                                            value={formData.name}
-                                            onChange={handleInputChange}
-                                            required
-                                            disabled={isLoading}
-                                            className="pl-10"
-                                        />
-                                    </div>
-                                </div>
-
-                                <div className="space-y-2">
-                                    <Label htmlFor="code">GP Code *</Label>
-                                    <Input
-                                        id="code"
-                                        name="code"
-                                        placeholder="Enter unique GP code"
-                                        value={formData.code}
-                                        onChange={handleInputChange}
-                                        required
-                                        disabled={isLoading}
-                                    />
-                                </div>
-                            </div>
-                        </div>
-
-                        {/* Location Information */}
-                        <div className="space-y-4">
-                            <h3 className="text-lg font-semibold">Location Information</h3>
-                            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                                <div className="space-y-2">
-                                    <Label htmlFor="state">State *</Label>
-                                    <div className="relative">
-                                        <MapPin className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
-                                        <Input
-                                            id="state"
-                                            name="state"
-                                            placeholder="Enter state"
-                                            value={formData.state}
-                                            onChange={handleInputChange}
-                                            required
-                                            disabled={isLoading}
-                                            className="pl-10"
-                                        />
-                                    </div>
-                                </div>
-
-                                <div className="space-y-2">
-                                    <Label htmlFor="district">District *</Label>
-                                    <Input
-                                        id="district"
-                                        name="district"
-                                        placeholder="Enter district"
-                                        value={formData.district}
-                                        onChange={handleInputChange}
-                                        required
-                                        disabled={isLoading}
-                                    />
-                                </div>
-
-                                <div className="space-y-2">
-                                    <Label htmlFor="block">Block *</Label>
-                                    <Input
-                                        id="block"
-                                        name="block"
-                                        placeholder="Enter block"
-                                        value={formData.block}
-                                        onChange={handleInputChange}
-                                        required
-                                        disabled={isLoading}
-                                    />
-                                </div>
-                            </div>
-
-                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                                <div className="space-y-2">
-                                    <Label htmlFor="pincode">Pincode</Label>
-                                    <Input
-                                        id="pincode"
-                                        name="pincode"
-                                        placeholder="Enter pincode"
-                                        value={formData.pincode}
-                                        onChange={handleInputChange}
-                                        disabled={isLoading}
-                                    />
-                                </div>
-
-                                <div className="space-y-2">
-                                    <Label htmlFor="address">Address</Label>
-                                    <Textarea
-                                        id="address"
-                                        name="address"
-                                        placeholder="Enter complete address"
-                                        value={formData.address}
-                                        onChange={handleInputChange}
-                                        disabled={isLoading}
-                                        rows={2}
-                                    />
-                                </div>
-                            </div>
-                        </div>
-
-                        {/* Demographics */}
-                        <div className="space-y-4">
-                            <h3 className="text-lg font-semibold">Demographics</h3>
-                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                                <div className="space-y-2">
-                                    <Label htmlFor="population">Population</Label>
-                                    <div className="relative">
-                                        <Users className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
-                                        <Input
-                                            id="population"
-                                            name="population"
-                                            type="number"
-                                            placeholder="Enter population"
-                                            value={formData.population}
-                                            onChange={handleInputChange}
-                                            disabled={isLoading}
-                                            className="pl-10"
-                                        />
-                                    </div>
-                                </div>
-
-                                <div className="space-y-2">
-                                    <Label htmlFor="area">Area (sq km)</Label>
-                                    <Input
-                                        id="area"
-                                        name="area"
-                                        type="number"
-                                        step="0.01"
-                                        placeholder="Enter area in sq km"
-                                        value={formData.area}
-                                        onChange={handleInputChange}
-                                        disabled={isLoading}
-                                    />
-                                </div>
-                            </div>
-                        </div>
-
-                        {/* Leadership */}
-                        <div className="space-y-4">
-                            <h3 className="text-lg font-semibold">Leadership</h3>
-                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                                <div className="space-y-2">
-                                    <Label htmlFor="sarpanchName">Sarpanch Name</Label>
-                                    <Input
-                                        id="sarpanchName"
-                                        name="sarpanchName"
-                                        placeholder="Enter Sarpanch name"
-                                        value={formData.sarpanchName}
-                                        onChange={handleInputChange}
-                                        disabled={isLoading}
-                                    />
-                                </div>
-
-                                <div className="space-y-2">
-                                    <Label htmlFor="secretaryName">Secretary Name</Label>
-                                    <Input
-                                        id="secretaryName"
-                                        name="secretaryName"
-                                        placeholder="Enter Secretary name"
-                                        value={formData.secretaryName}
-                                        onChange={handleInputChange}
-                                        disabled={isLoading}
-                                    />
-                                </div>
-                            </div>
-                        </div>
-
-                        {/* Contact Information */}
-                        <div className="space-y-4">
-                            <h3 className="text-lg font-semibold">Contact Information</h3>
-                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                                <div className="space-y-2">
-                                    <Label htmlFor="phoneNumber">Phone Number</Label>
-                                    <div className="relative">
-                                        <Phone className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
-                                        <Input
-                                            id="phoneNumber"
-                                            name="phoneNumber"
-                                            type="tel"
-                                            placeholder="Enter phone number"
-                                            value={formData.phoneNumber}
-                                            onChange={handleInputChange}
-                                            disabled={isLoading}
-                                            className="pl-10"
-                                        />
-                                    </div>
-                                </div>
-
-                                <div className="space-y-2">
-                                    <Label htmlFor="email">Email</Label>
-                                    <div className="relative">
-                                        <Mail className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
-                                        <Input
-                                            id="email"
-                                            name="email"
-                                            type="email"
-                                            placeholder="Enter email address"
-                                            value={formData.email}
-                                            onChange={handleInputChange}
-                                            disabled={isLoading}
-                                            className="pl-10"
-                                        />
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-
-                        <div className="flex gap-4 pt-4">
-                            <Button type="submit" disabled={isLoading}>
-                                {isLoading ? "Creating..." : "Create Gram Panchayat"}
-                            </Button>
-                            <Button type="button" variant="outline" onClick={() => router.back()}>
-                                Cancel
-                            </Button>
-                        </div>
-                    </form>
-                </CardContent>
-            </Card>
+  return (
+    <div className="space-y-6">
+      {/* Header */}
+      <div className="flex items-center justify-between">
+        <div className="flex items-center space-x-4">
+          <Button variant="outline" size="sm" asChild>
+            <Link href="/super-admin/gram-panchayats">
+              <ArrowLeft className="h-4 w-4 mr-2" />
+              Back to Gram Panchayats
+            </Link>
+          </Button>
+          <div>
+            <h1 className="text-3xl font-bold tracking-tight">New Gram Panchayat</h1>
+            <p className="text-muted-foreground">
+              Add a new Gram Panchayat to the system
+            </p>
+          </div>
         </div>
-    )
+      </div>
+
+      <form onSubmit={handleSubmit} className="space-y-6">
+        {/* Basic Information */}
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center">
+              <MapPin className="mr-2 h-5 w-5" />
+              Basic Information
+            </CardTitle>
+            <CardDescription>
+              Essential details about the Gram Panchayat
+            </CardDescription>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <div className="grid gap-4 md:grid-cols-2">
+              <div>
+                <Label htmlFor="name">Gram Panchayat Name *</Label>
+                <Input
+                  id="name"
+                  value={formData.name}
+                  onChange={(e) => setFormData(prev => ({ ...prev, name: e.target.value }))}
+                  placeholder="Enter Gram Panchayat name"
+                  required
+                />
+              </div>
+              
+              <div>
+                <Label htmlFor="code">GP Code *</Label>
+                <Input
+                  id="code"
+                  value={formData.code}
+                  onChange={(e) => setFormData(prev => ({ ...prev, code: e.target.value }))}
+                  placeholder="Enter unique GP code"
+                  required
+                />
+              </div>
+              
+              <div>
+                <Label htmlFor="state">State *</Label>
+                <Input
+                  id="state"
+                  value={formData.state}
+                  onChange={(e) => setFormData(prev => ({ ...prev, state: e.target.value }))}
+                  placeholder="Enter state name"
+                  required
+                />
+              </div>
+              
+              <div>
+                <Label htmlFor="district">District *</Label>
+                <Input
+                  id="district"
+                  value={formData.district}
+                  onChange={(e) => setFormData(prev => ({ ...prev, district: e.target.value }))}
+                  placeholder="Enter district name"
+                  required
+                />
+              </div>
+              
+              <div>
+                <Label htmlFor="block">Block *</Label>
+                <Input
+                  id="block"
+                  value={formData.block}
+                  onChange={(e) => setFormData(prev => ({ ...prev, block: e.target.value }))}
+                  placeholder="Enter block name"
+                  required
+                />
+              </div>
+              
+              <div>
+                <Label htmlFor="pincode">Pincode</Label>
+                <Input
+                  id="pincode"
+                  value={formData.pincode}
+                  onChange={(e) => setFormData(prev => ({ ...prev, pincode: e.target.value }))}
+                  placeholder="Enter pincode"
+                />
+              </div>
+            </div>
+            
+            <div>
+              <Label htmlFor="address">Address</Label>
+              <Textarea
+                id="address"
+                value={formData.address}
+                onChange={(e) => setFormData(prev => ({ ...prev, address: e.target.value }))}
+                placeholder="Enter complete address"
+                rows={3}
+              />
+            </div>
+          </CardContent>
+        </Card>
+
+        {/* Demographics */}
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center">
+              <Users className="mr-2 h-5 w-5" />
+              Demographics
+            </CardTitle>
+            <CardDescription>
+              Population and area information
+            </CardDescription>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <div className="grid gap-4 md:grid-cols-2">
+              <div>
+                <Label htmlFor="population">Population</Label>
+                <Input
+                  id="population"
+                  type="number"
+                  value={formData.population}
+                  onChange={(e) => setFormData(prev => ({ ...prev, population: e.target.value }))}
+                  placeholder="Enter population"
+                />
+              </div>
+              
+              <div>
+                <Label htmlFor="area">Area (sq km)</Label>
+                <Input
+                  id="area"
+                  type="number"
+                  step="0.01"
+                  value={formData.area}
+                  onChange={(e) => setFormData(prev => ({ ...prev, area: e.target.value }))}
+                  placeholder="Enter area in square kilometers"
+                />
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+
+        {/* Leadership */}
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center">
+              <Building className="mr-2 h-5 w-5" />
+              Leadership
+            </CardTitle>
+            <CardDescription>
+              Information about key officials
+            </CardDescription>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <div className="grid gap-4 md:grid-cols-2">
+              <div>
+                <Label htmlFor="sarpanchName">Sarpanch Name</Label>
+                <Input
+                  id="sarpanchName"
+                  value={formData.sarpanchName}
+                  onChange={(e) => setFormData(prev => ({ ...prev, sarpanchName: e.target.value }))}
+                  placeholder="Enter Sarpanch name"
+                />
+              </div>
+              
+              <div>
+                <Label htmlFor="secretaryName">Secretary Name</Label>
+                <Input
+                  id="secretaryName"
+                  value={formData.secretaryName}
+                  onChange={(e) => setFormData(prev => ({ ...prev, secretaryName: e.target.value }))}
+                  placeholder="Enter Secretary name"
+                />
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+
+        {/* Contact Information */}
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center">
+              <Phone className="mr-2 h-5 w-5" />
+              Contact Information
+            </CardTitle>
+            <CardDescription>
+              Phone and email contact details
+            </CardDescription>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <div className="grid gap-4 md:grid-cols-2">
+              <div>
+                <Label htmlFor="phoneNumber">Phone Number</Label>
+                <Input
+                  id="phoneNumber"
+                  value={formData.phoneNumber}
+                  onChange={(e) => setFormData(prev => ({ ...prev, phoneNumber: e.target.value }))}
+                  placeholder="Enter phone number"
+                />
+              </div>
+              
+              <div>
+                <Label htmlFor="email">Email</Label>
+                <Input
+                  id="email"
+                  type="email"
+                  value={formData.email}
+                  onChange={(e) => setFormData(prev => ({ ...prev, email: e.target.value }))}
+                  placeholder="Enter email address"
+                />
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+
+        {/* Action Buttons */}
+        <div className="flex justify-end space-x-4">
+          <Button 
+            type="button" 
+            variant="outline" 
+            asChild
+            disabled={isLoading}
+          >
+            <Link href="/super-admin/gram-panchayats">
+              Cancel
+            </Link>
+          </Button>
+          
+          <Button 
+            type="submit" 
+            disabled={isLoading}
+            className="min-w-[120px]"
+          >
+            {isLoading ? (
+              <>
+                <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
+                Creating...
+              </>
+            ) : (
+              <>
+                <Save className="h-4 w-4 mr-2" />
+                Create Gram Panchayat
+              </>
+            )}
+          </Button>
+        </div>
+      </form>
+    </div>
+  );
 }

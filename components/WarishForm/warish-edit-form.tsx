@@ -10,7 +10,7 @@ import { Form } from "@/components/ui/form";
 import {
   getWarishDetailsById,
   updateWarishDetails,
-} from "@/action/warishApplicationActions";
+} from "@/app/actions/warishApplicationActions";
 import {
   warishFormSchemas,
   WarishFormValuesTypes,

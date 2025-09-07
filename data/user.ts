@@ -46,6 +46,7 @@ export const createUser = async (userData: {
   phoneNumber?: string;
   employeeId?: string;
   designation?: string;
+  gramPanchayatId?: string;
   role?: "STAFF" | "ADMIN" | "SUPER_ADMIN";
 }) => {
   try {
@@ -57,6 +58,7 @@ export const createUser = async (userData: {
         phoneNumber: userData.phoneNumber,
         employeeId: userData.employeeId,
         designation: userData.designation,
+        gramPanchayatId: userData.gramPanchayatId,
         role: userData.role || "STAFF",
         isActive: true,
       },

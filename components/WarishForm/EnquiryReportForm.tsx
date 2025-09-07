@@ -15,7 +15,7 @@ import { AlertCircle, CheckCircle2, FileText } from "lucide-react";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Progress } from "@/components/ui/progress";
 import FormSubmitButton from "@/components/FormSubmitButton";
-import { submitEnquiryReport } from "@/action/warishApplicationAction";
+import { submitEnquiryReport } from "@/app/actions/warishApplicationAction";
 import { useRouter } from "next/navigation";
 
 export default function EnquiryReportForm({

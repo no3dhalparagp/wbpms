@@ -1,115 +1,326 @@
-import { prisma } from "@/lib/prisma"
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
-import { Button } from "@/components/ui/button"
-import { Badge } from "@/components/ui/badge"
-import { Plus, MapPin, Users, Building } from "lucide-react"
-import Link from "next/link"
+import { requireSuperAdmin } from "@/lib/auth-utils";
+import { prisma } from "@/lib/prisma";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
+import {
+  MapPin,
+  Search,
+  Filter,
+  Eye,
+  Edit,
+  Plus,
+  Users,
+  FileText,
+  Building,
+  Phone,
+  Mail,
+} from "lucide-react";
+import { auth } from "@/auth";
+import Link from "next/link";
 
-async function getGramPanchayats() {
-  return await prisma.gramPanchayat.findMany({
+async function getAllGramPanchayats() {
+  const gramPanchayats = await prisma.gramPanchayat.findMany({
+    orderBy: { createdAt: "desc" },
     include: {
-      users: {
-        select: { id: true, role: true },
-      },
-      villages: {
-        select: { id: true },
-      },
-      wards: {
-        select: { id: true },
+      _count: {
+        select: {
+          users: true,
+          villages: true,
+          wards: true,
+          warishApplications: true,
+        },
       },
     },
-    orderBy: { name: "asc" },
-  })
+  });
+
+  return gramPanchayats;
 }
 
-export default async function GramPanchayatsPage() {
-  const gramPanchayats = await getGramPanchayats()
+async function getGramPanchayatStats() {
+  const [
+    totalGramPanchayats,
+    activeGramPanchayats,
+    inactiveGramPanchayats,
+    totalUsers,
+    totalApplications,
+  ] = await Promise.all([
+    prisma.gramPanchayat.count(),
+    prisma.gramPanchayat.count({ where: { isActive: true } }),
+    prisma.gramPanchayat.count({ where: { isActive: false } }),
+    prisma.user.count(),
+    prisma.warishApplication.count(),
+  ]);
+
+  return {
+    totalGramPanchayats,
+    activeGramPanchayats,
+    inactiveGramPanchayats,
+    totalUsers,
+    totalApplications,
+  };
+}
+
+export default async function SuperAdminGramPanchayatsPage() {
+  await requireSuperAdmin();
+  const gramPanchayats = await getAllGramPanchayats();
+  const stats = await getGramPanchayatStats();
 
   return (
     <div className="space-y-6">
-      <div className="flex justify-between items-center">
+      <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-3xl font-bold">Gram Panchayats</h1>
-          <p className="text-muted-foreground">Manage all Gram Panchayats in the system</p>
+          <h1 className="text-3xl font-bold tracking-tight">
+            Gram Panchayat Management
+          </h1>
+          <p className="text-muted-foreground">
+            Manage all Gram Panchayats in the system
+          </p>
         </div>
         <Button asChild>
           <Link href="/super-admin/gram-panchayats/new">
             <Plus className="h-4 w-4 mr-2" />
-            Add New GP
+            Add Gram Panchayat
           </Link>
         </Button>
       </div>
 
-      <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-        {gramPanchayats.map((gp) => (
-          <Card key={gp.id} className="hover:shadow-md transition-shadow">
-            <CardHeader>
-              <div className="flex justify-between items-start">
-                <div>
-                  <CardTitle className="text-lg">{gp.name}</CardTitle>
-                  <CardDescription>Code: {gp.code}</CardDescription>
-                </div>
-                <Badge variant={gp.isActive ? "default" : "secondary"}>{gp.isActive ? "Active" : "Inactive"}</Badge>
-              </div>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <div className="flex items-center text-sm text-muted-foreground">
-                <MapPin className="h-4 w-4 mr-2" />
-                {gp.district}, {gp.state}
-              </div>
-
-              <div className="grid grid-cols-3 gap-4 text-center">
-                <div>
-                  <div className="flex items-center justify-center mb-1">
-                    <Users className="h-4 w-4" />
-                  </div>
-                  <div className="text-2xl font-bold">{gp.users.length}</div>
-                  <div className="text-xs text-muted-foreground">Staff</div>
-                </div>
-                <div>
-                  <div className="flex items-center justify-center mb-1">
-                    <Building className="h-4 w-4" />
-                  </div>
-                  <div className="text-2xl font-bold">{gp.villages.length}</div>
-                  <div className="text-xs text-muted-foreground">Villages</div>
-                </div>
-                <div>
-                  <div className="flex items-center justify-center mb-1">
-                    <MapPin className="h-4 w-4" />
-                  </div>
-                  <div className="text-2xl font-bold">{gp.wards.length}</div>
-                  <div className="text-xs text-muted-foreground">Wards</div>
-                </div>
-              </div>
-
-              <div className="flex gap-2">
-                <Button variant="outline" size="sm" asChild className="flex-1 bg-transparent">
-                  <Link href={`/super-admin/gram-panchayats/${gp.id}`}>View Details</Link>
-                </Button>
-                <Button variant="outline" size="sm" asChild className="flex-1 bg-transparent">
-                  <Link href={`/super-admin/gram-panchayats/${gp.id}/edit`}>Edit</Link>
-                </Button>
-              </div>
-            </CardContent>
-          </Card>
-        ))}
-      </div>
-
-      {gramPanchayats.length === 0 && (
+      {/* Statistics */}
+      <div className="grid gap-4 md:grid-cols-5">
         <Card>
-          <CardContent className="text-center py-12">
-            <Building className="h-12 w-12 mx-auto text-muted-foreground mb-4" />
-            <h3 className="text-lg font-semibold mb-2">No Gram Panchayats Found</h3>
-            <p className="text-muted-foreground mb-4">Get started by adding your first Gram Panchayat to the system.</p>
-            <Button asChild>
-              <Link href="/super-admin/gram-panchayats/new">
-                <Plus className="h-4 w-4 mr-2" />
-                Add First GP
-              </Link>
-            </Button>
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium">Total GPs</CardTitle>
+            <MapPin className="h-4 w-4 text-muted-foreground" />
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold">
+              {stats.totalGramPanchayats}
+            </div>
+            <p className="text-xs text-muted-foreground">All Gram Panchayats</p>
           </CardContent>
         </Card>
-      )}
+
+        <Card>
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium">Active</CardTitle>
+            <MapPin className="h-4 w-4 text-green-600" />
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold text-green-600">
+              {stats.activeGramPanchayats}
+            </div>
+            <p className="text-xs text-muted-foreground">
+              Active Gram Panchayats
+            </p>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium">Inactive</CardTitle>
+            <MapPin className="h-4 w-4 text-red-600" />
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold text-red-600">
+              {stats.inactiveGramPanchayats}
+            </div>
+            <p className="text-xs text-muted-foreground">
+              Inactive Gram Panchayats
+            </p>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium">Total Users</CardTitle>
+            <Users className="h-4 w-4 text-muted-foreground" />
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold">{stats.totalUsers}</div>
+            <p className="text-xs text-muted-foreground">Across all GPs</p>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium">Applications</CardTitle>
+            <FileText className="h-4 w-4 text-muted-foreground" />
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold">{stats.totalApplications}</div>
+            <p className="text-xs text-muted-foreground">Total applications</p>
+          </CardContent>
+        </Card>
+      </div>
+
+      {/* Gram Panchayats Table */}
+      <Card>
+        <CardHeader>
+          <CardTitle>All Gram Panchayats</CardTitle>
+          <CardDescription>
+            Complete list of Gram Panchayats in the system
+          </CardDescription>
+        </CardHeader>
+        <CardContent>
+          <div className="flex gap-4 mb-6">
+            <div className="relative flex-1">
+              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground h-4 w-4" />
+              <Input
+                placeholder="Search by name, district, state, or GP code..."
+                className="pl-10"
+              />
+            </div>
+            <Button variant="outline">
+              <Filter className="mr-2 h-4 w-4" />
+              Filter
+            </Button>
+          </div>
+
+          <div className="rounded-md border">
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead>GP Name</TableHead>
+                  <TableHead>Code</TableHead>
+                  <TableHead>Location</TableHead>
+                  <TableHead>Contact</TableHead>
+                  <TableHead>Statistics</TableHead>
+                  <TableHead>Status</TableHead>
+                  <TableHead>Created</TableHead>
+                  <TableHead className="text-right">Actions</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {gramPanchayats.length > 0 ? (
+                  gramPanchayats.map((gp) => (
+                    <TableRow key={gp.id}>
+                      <TableCell>
+                        <div>
+                          <div className="font-medium">{gp.name}</div>
+                          {gp.sarpanchName && (
+                            <div className="text-sm text-muted-foreground">
+                              Sarpanch: {gp.sarpanchName}
+                            </div>
+                          )}
+                        </div>
+                      </TableCell>
+                      <TableCell className="font-mono text-sm">
+                        {gp.code}
+                      </TableCell>
+                      <TableCell>
+                        <div>
+                          <div className="font-medium">{gp.district}</div>
+                          <div className="text-sm text-muted-foreground">
+                            {gp.state} • {gp.block}
+                          </div>
+                          {gp.pincode && (
+                            <div className="text-sm text-muted-foreground">
+                              PIN: {gp.pincode}
+                            </div>
+                          )}
+                        </div>
+                      </TableCell>
+                      <TableCell>
+                        <div className="space-y-1">
+                          {gp.phoneNumber && (
+                            <div className="flex items-center text-sm">
+                              <Phone className="h-3 w-3 mr-1" />
+                              {gp.phoneNumber}
+                            </div>
+                          )}
+                          {gp.email && (
+                            <div className="flex items-center text-sm">
+                              <Mail className="h-3 w-3 mr-1" />
+                              {gp.email}
+                            </div>
+                          )}
+                        </div>
+                      </TableCell>
+                      <TableCell>
+                        <div className="space-y-1">
+                          <div className="flex items-center text-sm">
+                            <Users className="h-3 w-3 mr-1" />
+                            {gp._count.users} users
+                          </div>
+                          <div className="flex items-center text-sm">
+                            <FileText className="h-3 w-3 mr-1" />
+                            {gp._count.warishApplications} apps
+                          </div>
+                          <div className="flex items-center text-sm">
+                            <Building className="h-3 w-3 mr-1" />
+                            {gp._count.villages} villages
+                          </div>
+                        </div>
+                      </TableCell>
+                      <TableCell>
+                        <Badge
+                          variant={gp.isActive ? "default" : "destructive"}
+                        >
+                          {gp.isActive ? "Active" : "Inactive"}
+                        </Badge>
+                      </TableCell>
+                      <TableCell>{gp.createdAt.toLocaleDateString()}</TableCell>
+                      <TableCell className="text-right">
+                        <div className="flex justify-end space-x-2">
+                          <Button size="sm" variant="outline" asChild>
+                            <Link
+                              href={`/super-admin/gram-panchayats/${gp.id}`}
+                            >
+                              <Eye className="h-4 w-4" />
+                            </Link>
+                          </Button>
+                          <Button size="sm" variant="outline" asChild>
+                            <Link
+                              href={`/super-admin/gram-panchayats/${gp.id}/edit`}
+                            >
+                              <Edit className="h-4 w-4" />
+                            </Link>
+                          </Button>
+                        </div>
+                      </TableCell>
+                    </TableRow>
+                  ))
+                ) : (
+                  <TableRow>
+                    <TableCell colSpan={8} className="text-center py-8">
+                      <div className="flex flex-col items-center space-y-2">
+                        <MapPin className="h-8 w-8 text-muted-foreground" />
+                        <p className="text-muted-foreground">
+                          No Gram Panchayats found
+                        </p>
+                        <p className="text-sm text-muted-foreground">
+                          Start by adding a new Gram Panchayat
+                        </p>
+                        <Button asChild>
+                          <Link href="/super-admin/gram-panchayats/new">
+                            <Plus className="h-4 w-4 mr-2" />
+                            Add Gram Panchayat
+                          </Link>
+                        </Button>
+                      </div>
+                    </TableCell>
+                  </TableRow>
+                )}
+              </TableBody>
+            </Table>
+          </div>
+        </CardContent>
+      </Card>
     </div>
-  )
+  );
 }
