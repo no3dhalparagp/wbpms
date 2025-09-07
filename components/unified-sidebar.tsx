@@ -19,6 +19,8 @@ import {
 import type { RootState } from "@/redux/store";
 import { toggleMenu } from "@/redux/slices/menuSlice";
 import ImprovedFooter from "./improved-footer";
+import useSWR from "swr";
+import { isFeatureEnabled } from "@/lib/utils";
 
 // Types
 type Role = "ADMIN" | "STAFF" | "SUPER_ADMIN";
@@ -44,12 +46,15 @@ const DASHBOARD_CONFIG: Record<Role, DashboardConfig> = {
 };
 
 // Components
+function MenuItem({ item, userRole }: { item: MenuItemProps; userRole: Role }) {
+  if (isRestrictedForRole(item, userRole)) return null;
+=======
 const SidebarMenuItem: React.FC<{ item: MenuItemProps; userRole: Role }> = ({ item, userRole }) => {
   const normalizedRole = userRole;
 
   if (isRestrictedForRole(item, normalizedRole)) {
     return null;
-  }
+}
 
   return (
     <Button
@@ -73,6 +78,11 @@ const SidebarMenuItem: React.FC<{ item: MenuItemProps; userRole: Role }> = ({ it
 
 function SidebarContent({ role }: { role: Role }) {
   const config = DASHBOARD_CONFIG[role];
+  const { data } = useSWR<{ settings: Record<string, boolean> }>(
+    "/api/system-settings",
+    (url: string) => fetch(url).then((r) => r.json())
+  );
+  const featureMap: Record<string, boolean> = (data?.settings as Record<string, boolean>) || {};
 
   return (
     <div className="w-64 flex-shrink-0 border-r bg-background h-full flex flex-col">
@@ -90,9 +100,16 @@ function SidebarContent({ role }: { role: Role }) {
 
       <ScrollArea className="flex-grow p-2">
         <nav className="space-y-1" aria-label={`${role} navigation`}>
+
+          {config.items
+            .filter((i) => isFeatureEnabled(i.featureKey, featureMap))
+            .map((item) => (
+              <MenuItem key={item.menuItemText} item={item} userRole={role} />
+            ))}
           {config.items.map((item) => (
             <SidebarMenuItem key={item.menuItemText} item={item} userRole={role} />
           ))}
+
         </nav>
       </ScrollArea>
 
@@ -101,8 +118,12 @@ function SidebarContent({ role }: { role: Role }) {
   );
 }
 
+
+export default function UnifiedSidebar({ role = "ADMIN" }: { role?: Role }) {
+
 export default function UnifiedSidebar({ role }: { role?: Role }) {
   const { data: session } = useSession();
+
   const isMenuOpen = useSelector((state: RootState) => state.menu.isOpen);
   const dispatch = useDispatch();
   const [isMounted, setIsMounted] = useState(false);

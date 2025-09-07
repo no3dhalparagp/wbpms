@@ -795,3 +795,15 @@ model AOC {
   @@index([aocNumber])
   @@index([aocDate])
 }
+
+/// System-wide key-value settings (MongoDB collection)
+model SystemSetting {
+  id        String   @id @default(auto()) @map("_id") @db.ObjectId
+  key       String   @unique
+  value     String?
+  boolValue Boolean?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@map("system_settings")
+}

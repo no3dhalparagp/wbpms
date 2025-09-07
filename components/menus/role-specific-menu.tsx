@@ -11,6 +11,9 @@ import {
   superAdminMenuItems,
   type MenuItemProps,
 } from "@/constants/menu-constants";
+import { isFeatureEnabled } from "@/lib/utils";
+import useSWR from "swr";
+import { useMemo } from "react";
 
 export function RoleSpecificMenu() {
   const { data: session } = useSession();
@@ -42,6 +45,21 @@ export function RoleSpecificMenu() {
   };
 
   const menuItems = getMenuItems(session.user.role);
+  const { data } = useSWR<{ settings: Record<string, boolean> }>(
+    "/api/system-settings",
+    (url: string) => fetch(url).then((r) => r.json())
+  );
+  const featureMap: Record<string, boolean> = data?.settings || {};
+  const filteredItems = useMemo(() => {
+    const filterByFeature = (items: MenuItemProps[]): MenuItemProps[] =>
+      items
+        .filter((i) => isFeatureEnabled(i.featureKey, featureMap))
+        .map((i) => ({
+          ...i,
+          subMenuItems: filterByFeature(i.subMenuItems || []),
+        }));
+    return filterByFeature(menuItems);
+  }, [menuItems, featureMap]);
 
   const getRoleColor = (role: string) => {
     switch (role.toUpperCase()) {
@@ -74,7 +92,7 @@ export function RoleSpecificMenu() {
 
       {/* Menu Items */}
       <div className="space-y-1">
-        {menuItems.map((item, index) => (
+        {filteredItems.map((item: MenuItemProps, index: number) => (
           <Button
             key={index}
             asChild

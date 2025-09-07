@@ -37,6 +37,7 @@ export type MenuItemProps = {
   submenu: boolean;
   subMenuItems: MenuItemProps[];
   allowedRoles: ("ADMIN" | "STAFF" | "SUPER_ADMIN")[];
+  featureKey?: string;
 };
 
 // Color Constants
@@ -69,7 +70,8 @@ const createMenuItem = (
   link?: string,
   Icon?: IconType,
   color: string = COLORS.blue,
-  subItems: MenuItemProps[] = []
+  subItems: MenuItemProps[] = [],
+  featureKey?: string
 ): MenuItemProps => ({
   menuItemText: text,
   menuItemLink: link,
@@ -78,6 +80,7 @@ const createMenuItem = (
   submenu: subItems.length > 0,
   subMenuItems: subItems,
   allowedRoles: roles,
+  featureKey,
 });
 
 export const adminMenuItems: MenuItemProps[] = [
@@ -243,7 +246,9 @@ export const adminMenuItems: MenuItemProps[] = [
     ["ADMIN"],
     `${BASE_URLS.ADMIN}/gram-panchayats`,
     MdHolidayVillage,
-    COLORS.purple
+    COLORS.purple,
+    [],
+    "feature.gpMenu.enabled"
   ),
   createMenuItem(
     "Applications",
@@ -350,7 +355,9 @@ export const employeeMenuItems: MenuItemProps[] = [
     ["STAFF"],
     `${BASE_URLS.STAFF}/gram-panchayat`,
     MdHolidayVillage,
-    COLORS.orange
+    COLORS.orange,
+    [],
+    "feature.gpMenu.enabled"
   ),
 ];
 
@@ -374,7 +381,9 @@ export const superAdminMenuItems: MenuItemProps[] = [
     ["SUPER_ADMIN"],
     `${BASE_URLS.SUPER_ADMIN}/gram-panchayats`,
     MdHolidayVillage,
-    COLORS.purple
+    COLORS.purple,
+    [],
+    "feature.gpMenu.enabled"
   ),
   createMenuItem(
     "Add New GP",
