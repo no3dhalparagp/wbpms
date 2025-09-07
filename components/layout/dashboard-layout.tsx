@@ -21,6 +21,8 @@ import {
   superAdminMenuItems,
   type MenuItemProps,
 } from "@/constants/menu-constants";
+import useSWR from "swr";
+import { isFeatureEnabled } from "@/lib/utils";
 
 interface DashboardLayoutProps {
   children: ReactNode;
@@ -58,7 +60,7 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
   const [expanded, setExpanded] = useState<Record<string, boolean>>({});
 
   const toggleExpand = (key: string) =>
-    setExpanded((prev) => ({ ...prev, [key]: !prev[key] }));
+    setExpanded((prev: Record<string, boolean>) => ({ ...prev, [key]: !prev[key] }));
 
   const renderMenuTree = (item: MenuItemProps, path: string, depth = 0) => {
     const key = `${path}/${item.menuItemText}`;
@@ -89,9 +91,9 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
           </button>
           {isOpen && (
             <div className="mt-1 space-y-1 pl-4">
-              {item.subMenuItems.map((sub) =>
-                renderMenuTree(sub, key, depth + 1)
-              )}
+              {item.subMenuItems
+                .filter((s) => isFeatureEnabled(s.featureKey, featureMap))
+                .map((sub) => renderMenuTree(sub, key, depth + 1))}
             </div>
           )}
         </div>
@@ -123,6 +125,11 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
   };
 
   const menuItems = getMenuItems(session.user.role);
+  const { data } = useSWR<{ settings: Record<string, boolean> }>(
+    "/api/system-settings",
+    (url: string) => fetch(url).then((r) => r.json())
+  );
+  const featureMap: Record<string, boolean> = data?.settings || {};
 
   return (
     <div className="min-h-screen bg-background">
@@ -178,7 +185,9 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
             </p>
           </div>
           <nav className="space-y-1">
-            {menuItems.map((item) => renderMenuTree(item, "root"))}
+            {menuItems
+              .filter((i) => isFeatureEnabled(i.featureKey, featureMap))
+              .map((item) => renderMenuTree(item, "root"))}
           </nav>
         </div>
 

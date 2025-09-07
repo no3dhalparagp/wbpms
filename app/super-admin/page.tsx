@@ -15,6 +15,8 @@ import {
 } from "lucide-react";
 import { auth } from "@/auth";
 import Link from "next/link";
+import dynamic from "next/dynamic";
+const SystemSettingsCard = dynamic(() => import("@/components/super-admin/system-settings-card"), { ssr: false });
 
 async function getSuperAdminStats() {
   const [
@@ -347,6 +349,9 @@ export default async function SuperAdminDashboard() {
           </div>
         </CardContent>
       </Card>
+
+      {/* Settings */}
+      <SystemSettingsCard />
     </div>
   );
 }

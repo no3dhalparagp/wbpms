@@ -18,6 +18,8 @@ import {
 import type { RootState } from "@/redux/store";
 import { toggleMenu } from "@/redux/slices/menuSlice";
 import ImprovedFooter from "./improved-footer";
+import useSWR from "swr";
+import { isFeatureEnabled } from "@/lib/utils";
 
 // Types
 type Role = "ADMIN" | "STAFF" | "SUPER_ADMIN";
@@ -28,16 +30,15 @@ interface DashboardConfig {
 }
 
 const DASHBOARD_CONFIG: Record<Role, DashboardConfig> = {
-  
-  admin: {
+  ADMIN: {
     title: "Admin Portal",
     items: adminMenuItems,
   },
-  staff: {
+  STAFF: {
     title: "Staff Portal",
     items: employeeMenuItems,
   },
-  superadmin: {
+  SUPER_ADMIN: {
     title: "Super Admin Portal",
     items: superAdminMenuItems,
   },
@@ -45,14 +46,7 @@ const DASHBOARD_CONFIG: Record<Role, DashboardConfig> = {
 
 // Components
 function MenuItem({ item, userRole }: { item: MenuItemProps; userRole: Role }) {
-  const normalizedRole =
-    userRole === "superadmin"
-      ? "SUPER_ADMIN"
-      : (userRole.toUpperCase() as "ADMIN" | "STAFF");
-
-  if (userRole !== "user" && isRestrictedForRole(item, normalizedRole)) {
-    return null;
-  }
+  if (isRestrictedForRole(item, userRole)) return null;
 
   return (
     <Button
@@ -76,6 +70,11 @@ function MenuItem({ item, userRole }: { item: MenuItemProps; userRole: Role }) {
 
 function SidebarContent({ role }: { role: Role }) {
   const config = DASHBOARD_CONFIG[role];
+  const { data } = useSWR<{ settings: Record<string, boolean> }>(
+    "/api/system-settings",
+    (url: string) => fetch(url).then((r) => r.json())
+  );
+  const featureMap: Record<string, boolean> = (data?.settings as Record<string, boolean>) || {};
 
   return (
     <div className="w-64 flex-shrink-0 border-r bg-background h-full flex flex-col">
@@ -93,9 +92,11 @@ function SidebarContent({ role }: { role: Role }) {
 
       <ScrollArea className="flex-grow p-2">
         <nav className="space-y-1" aria-label={`${role} navigation`}>
-          {config.items.map((item) => (
-            <MenuItem key={item.menuItemText} item={item} userRole={role} />
-          ))}
+          {config.items
+            .filter((i) => isFeatureEnabled(i.featureKey, featureMap))
+            .map((item) => (
+              <MenuItem key={item.menuItemText} item={item} userRole={role} />
+            ))}
         </nav>
       </ScrollArea>
 
@@ -104,7 +105,7 @@ function SidebarContent({ role }: { role: Role }) {
   );
 }
 
-export default function UnifiedSidebar({ role = "user" }: { role?: Role }) {
+export default function UnifiedSidebar({ role = "ADMIN" }: { role?: Role }) {
   const isMenuOpen = useSelector((state: RootState) => state.menu.isOpen);
   const dispatch = useDispatch();
   const [isMounted, setIsMounted] = useState(false);
