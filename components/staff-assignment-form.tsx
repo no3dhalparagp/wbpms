@@ -22,7 +22,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Button } from "@/components/ui/button";
-import { assignStaff } from "@/action/warishApplicationAction";
+import { assignStaff } from "@/app/actions/warishApplicationAction";
 import { toast } from "sonner";
 
 const formSchema = z.object({
