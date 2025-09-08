@@ -15,6 +15,8 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Badge } from "@/components/ui/badge";
 import StaffAssignmentForm from "@/components/staff-assignment-form";
 
+import {auth  } from "@/auth";
+
 const statusVariant: Record<string, string> = {
   submitted: "bg-yellow-100 text-yellow-800",
   process: "bg-blue-100 text-blue-800",
@@ -23,11 +25,24 @@ const statusVariant: Record<string, string> = {
 };
 
 export default async function WarishManagement() {
+  // Get the current user session to determine the Gram Panchayat
+  const session = await auth()
+  const currentUserId = session?.user?.id;
+  
+  // Get current user's Gram Panchayat ID
+  const currentUser = await prisma.user.findUnique({
+    where: { id: currentUserId },
+    select: { gramPanchayatId: true }
+  });
+  
+  const gramPanchayatId = currentUser?.gramPanchayatId;
+
   const [pending, assigned] = await Promise.all([
     prisma.warishApplication.findMany({
       where: {
         warishApplicationStatus: "submitted",
         User: { NOT: { role: "STAFF" } },
+        ...(gramPanchayatId && { gramPanchayatId }) // Filter by Gram Panchayat if available
       },
       include: { User: true },
       orderBy: { createdAt: "desc" },
@@ -36,16 +51,19 @@ export default async function WarishManagement() {
       where: {
         warishApplicationStatus: "process",
         assingstaffId: { not: null },
+        ...(gramPanchayatId && { gramPanchayatId }) // Filter by Gram Panchayat if available
       },
       include: { User: true },
       orderBy: { updatedAt: "desc" },
     }),
   ]);
 
+  // Filter staff members by Gram Panchayat
   const staffMembers = await prisma.user.findMany({
     where: {
       role: "STAFF",
       isActive: true,
+      ...(gramPanchayatId && { gramPanchayatId }) // Filter by Gram Panchayat if available
     },
     select: {
       id: true,
@@ -60,6 +78,15 @@ export default async function WarishManagement() {
 
   return (
     <div className="space-y-6">
+      <div className="flex justify-between items-center">
+        <h1 className="text-2xl font-bold">Warish Application Management</h1>
+        {gramPanchayatId && (
+          <Badge variant="outline" className="ml-2">
+            Filtered by Gram Panchayat
+          </Badge>
+        )}
+      </div>
+      
       <Tabs defaultValue="pending">
         <TabsList>
           <TabsTrigger value="pending">Pending ({pending.length})</TabsTrigger>
@@ -115,6 +142,14 @@ export default async function WarishManagement() {
                     </TableCell>
                   </TableRow>
                 ))}
+                {pending.length === 0 && (
+                  <TableRow>
+                    <TableCell colSpan={6} className="text-center py-4">
+                      No pending applications found
+                      {gramPanchayatId && " for your Gram Panchayat"}
+                    </TableCell>
+                  </TableRow>
+                )}
               </TableBody>
             </Table>
           </div>
@@ -160,6 +195,14 @@ export default async function WarishManagement() {
                     </TableRow>
                   );
                 })}
+                {assigned.length === 0 && (
+                  <TableRow>
+                    <TableCell colSpan={5} className="text-center py-4">
+                      No assigned applications found
+                      {gramPanchayatId && " for your Gram Panchayat"}
+                    </TableCell>
+                  </TableRow>
+                )}
               </TableBody>
             </Table>
           </div>
