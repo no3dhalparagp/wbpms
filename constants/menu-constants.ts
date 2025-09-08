@@ -38,6 +38,7 @@ export type MenuItemProps = {
   subMenuItems: MenuItemProps[];
   allowedRoles: ("ADMIN" | "STAFF" | "SUPER_ADMIN")[];
   featureKey?: string;
+  minSubscriptionLevel?: "BASIC" | "STANDARD" | "PREMIUM" | "ENTERPRISE";
 };
 
 // Color Constants
@@ -71,7 +72,8 @@ const createMenuItem = (
   Icon?: IconType,
   color: string = COLORS.blue,
   subItems: MenuItemProps[] = [],
-  featureKey?: string
+  featureKey?: string,
+  minSubscriptionLevel: "BASIC" | "STANDARD" | "PREMIUM" | "ENTERPRISE" = "BASIC"
 ): MenuItemProps => ({
   menuItemText: text,
   menuItemLink: link,
@@ -81,6 +83,7 @@ const createMenuItem = (
   subMenuItems: subItems,
   allowedRoles: roles,
   featureKey,
+  minSubscriptionLevel,
 });
 
 export const adminMenuItems: MenuItemProps[] = [
@@ -110,28 +113,40 @@ export const adminMenuItems: MenuItemProps[] = [
             ["ADMIN"],
             `${BASE_URLS.ADMIN}/manage-warish/application`,
             FaChevronCircleRight,
-            COLORS.teal
+            COLORS.teal,
+            [],
+            undefined,
+            "STANDARD"
           ),
           createMenuItem(
             "Bulk Applications",
             ["ADMIN"],
             `${BASE_URLS.ADMIN}/manage-warish/bulk-upload`,
             FaChevronCircleRight,
-            COLORS.blue
+            COLORS.blue,
+            [],
+            undefined,
+            "STANDARD"
           ),
           createMenuItem(
             "Document Upload",
             ["ADMIN"],
             `${BASE_URLS.ADMIN}/manage-warish/pending-uploaddoc`,
             FaChevronCircleRight,
-            COLORS.teal
+            COLORS.teal,
+            [],
+            undefined,
+            "BASIC"
           ),
           createMenuItem(
             "Verification",
             ["ADMIN"],
             `${BASE_URLS.ADMIN}/manage-warish/verify-document`,
             FaChevronCircleRight,
-            COLORS.teal
+            COLORS.teal,
+            [],
+            undefined,
+            "STANDARD"
           ),
         ]
       ),
@@ -147,21 +162,30 @@ export const adminMenuItems: MenuItemProps[] = [
             ["ADMIN"],
             `${BASE_URLS.ADMIN}/manage-warish/assign-staff`,
             FaChevronCircleRight,
-            COLORS.blue
+            COLORS.blue,
+            [],
+            undefined,
+            "STANDARD"
           ),
           createMenuItem(
             "Public Assignments",
             ["ADMIN"],
             `${BASE_URLS.ADMIN}/manage-warish/assign-citizen`,
             FaChevronCircleRight,
-            COLORS.blue
+            COLORS.blue,
+            [],
+            undefined,
+            "PREMIUM"
           ),
           createMenuItem(
             "Approval Process",
             ["ADMIN"],
             `${BASE_URLS.ADMIN}/manage-warish/approve`,
             FaChevronCircleRight,
-            COLORS.blue
+            COLORS.blue,
+            [],
+            undefined,
+            "STANDARD"
           ),
         ]
       ),
@@ -177,21 +201,30 @@ export const adminMenuItems: MenuItemProps[] = [
             ["ADMIN"],
             `${BASE_URLS.ADMIN}/manage-warish/print`,
             FaChevronCircleRight,
-            COLORS.green
+            COLORS.green,
+            [],
+            undefined,
+            "STANDARD"
           ),
           createMenuItem(
             "Generate Certificate",
             ["ADMIN"],
             `${BASE_URLS.ADMIN}/manage-warish/generate`,
             FaChevronCircleRight,
-            COLORS.green
+            COLORS.green,
+            [],
+            undefined,
+            "STANDARD"
           ),
           createMenuItem(
             "Renewal Processing",
             ["ADMIN"],
             `${BASE_URLS.ADMIN}/manage-warish/renew`,
             FaChevronCircleRight,
-            COLORS.blue
+            COLORS.blue,
+            [],
+            undefined,
+            "PREMIUM"
           ),
         ]
       ),
@@ -207,21 +240,30 @@ export const adminMenuItems: MenuItemProps[] = [
             ["ADMIN"],
             `${BASE_URLS.ADMIN}/manage-warish/status`,
             FaChevronCircleRight,
-            COLORS.purple
+            COLORS.purple,
+            [],
+            undefined,
+            "BASIC"
           ),
           createMenuItem(
             "Performance Metrics",
             ["ADMIN"],
             `${BASE_URLS.ADMIN}/manage-warish/metrics`,
             FaChevronCircleRight,
-            COLORS.orange
+            COLORS.orange,
+            [],
+            undefined,
+            "PREMIUM"
           ),
           createMenuItem(
             "Correction Requests",
             ["ADMIN"],
             `${BASE_URLS.ADMIN}/manage-warish/correction-requests`,
             FaChevronCircleRight,
-            COLORS.red
+            COLORS.red,
+            [],
+            undefined,
+            "STANDARD"
           ),
         ]
       ),
@@ -248,7 +290,8 @@ export const adminMenuItems: MenuItemProps[] = [
     MdHolidayVillage,
     COLORS.purple,
     [],
-    "feature.gpMenu.enabled"
+    "feature.gpMenu.enabled",
+    "STANDARD"
   ),
   createMenuItem(
     "Applications",
@@ -357,7 +400,8 @@ export const employeeMenuItems: MenuItemProps[] = [
     MdHolidayVillage,
     COLORS.orange,
     [],
-    "feature.gpMenu.enabled"
+    "feature.gpMenu.enabled",
+    "STANDARD"
   ),
 ];
 
@@ -383,7 +427,8 @@ export const superAdminMenuItems: MenuItemProps[] = [
     MdHolidayVillage,
     COLORS.purple,
     [],
-    "feature.gpMenu.enabled"
+    "feature.gpMenu.enabled",
+    "STANDARD"
   ),
   createMenuItem(
     "Add New GP",

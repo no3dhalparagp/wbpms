@@ -82,6 +82,7 @@ model GramPanchayat {
   secretaryName String? // GP Secretary
   phoneNumber   String?
   email         String?
+  subscriptionLevel SubscriptionLevel @default(BASIC)
   isActive      Boolean  @default(true)
   createdAt     DateTime @default(now())
   updatedAt     DateTime @updatedAt
@@ -96,6 +97,13 @@ model GramPanchayat {
   nitDetails                NitDetails[]
 
   @@map("gram_panchayats")
+}
+
+enum SubscriptionLevel {
+  BASIC
+  STANDARD
+  PREMIUM
+  ENTERPRISE
 }
 
 model WarishApplication {

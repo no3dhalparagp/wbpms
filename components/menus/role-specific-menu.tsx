@@ -11,7 +11,7 @@ import {
   superAdminMenuItems,
   type MenuItemProps,
 } from "@/constants/menu-constants";
-import { isFeatureEnabled } from "@/lib/utils";
+import { hasRequiredSubscription, isFeatureEnabled } from "@/lib/utils";
 import useSWR from "swr";
 import { useMemo } from "react";
 
@@ -51,15 +51,25 @@ export function RoleSpecificMenu() {
   );
   const featureMap: Record<string, boolean> = data?.settings || {};
   const filteredItems = useMemo(() => {
-    const filterByFeature = (items: MenuItemProps[]): MenuItemProps[] =>
+    const currentSubscription = (session.user.subscriptionLevel || "BASIC") as
+      | "BASIC"
+      | "STANDARD"
+      | "PREMIUM"
+      | "ENTERPRISE";
+
+    const filterItems = (items: MenuItemProps[]): MenuItemProps[] =>
       items
-        .filter((i) => isFeatureEnabled(i.featureKey, featureMap))
+        .filter(
+          (i) =>
+            isFeatureEnabled(i.featureKey, featureMap) &&
+            hasRequiredSubscription(currentSubscription, i.minSubscriptionLevel)
+        )
         .map((i) => ({
           ...i,
-          subMenuItems: filterByFeature(i.subMenuItems || []),
+          subMenuItems: filterItems(i.subMenuItems || []),
         }));
-    return filterByFeature(menuItems);
-  }, [menuItems, featureMap]);
+    return filterItems(menuItems);
+  }, [menuItems, featureMap, session.user.subscriptionLevel]);
 
   const getRoleColor = (role: string) => {
     switch (role.toUpperCase()) {
