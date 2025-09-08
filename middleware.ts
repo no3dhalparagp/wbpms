@@ -1,7 +1,18 @@
 import { auth } from "@/auth"
 import { NextResponse } from "next/server"
 
-export default auth((req) => {
+type AuthRequest = {
+  nextUrl: { pathname: string }
+  url: string
+  auth?: {
+    user?: {
+      isActive?: boolean
+      role?: string
+    }
+  }
+}
+
+export default auth((req: AuthRequest) => {
   const { pathname } = req.nextUrl
 
   // Public routes that don't require authentication
@@ -30,9 +41,9 @@ export default auth((req) => {
       }
     }
 
-    // Admin API routes
+    // Admin API routes (only ADMIN)
     if (pathname.startsWith("/api/admin")) {
-      if (!["ADMIN", "SUPER_ADMIN"].includes(userRole)) {
+      if (userRole !== "ADMIN") {
         return NextResponse.json({ error: "Insufficient permissions" }, { status: 403 })
       }
     }
@@ -60,9 +71,9 @@ export default auth((req) => {
     }
   }
 
-  // Admin routes (accessible by ADMIN and SUPER_ADMIN)
+  // Admin routes (only ADMIN)
   if (pathname.startsWith("/admin")) {
-    if (!["ADMIN", "SUPER_ADMIN"].includes(userRole)) {
+    if (userRole !== "ADMIN") {
       return NextResponse.redirect(new URL("/dashboard", req.url))
     }
   }
