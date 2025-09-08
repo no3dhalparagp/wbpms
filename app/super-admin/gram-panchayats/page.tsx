@@ -198,6 +198,7 @@ export default async function SuperAdminGramPanchayatsPage() {
                   <TableHead>GP Name</TableHead>
                   <TableHead>Code</TableHead>
                   <TableHead>Location</TableHead>
+                  <TableHead>Subscription</TableHead>
                   <TableHead>Contact</TableHead>
                   <TableHead>Statistics</TableHead>
                   <TableHead>Status</TableHead>
@@ -234,6 +235,9 @@ export default async function SuperAdminGramPanchayatsPage() {
                             </div>
                           )}
                         </div>
+                      </TableCell>
+                      <TableCell>
+                        <Badge variant="outline">{gp.subscriptionLevel || "BASIC"}</Badge>
                       </TableCell>
                       <TableCell>
                         <div className="space-y-1">

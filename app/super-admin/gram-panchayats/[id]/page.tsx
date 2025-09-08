@@ -91,6 +91,10 @@ export default async function SuperAdminGpDetailsPage({ params }: { params: { id
                 {gp.isActive ? "Active" : "Inactive"}
               </Badge>
             </div>
+            <div>
+              <div className="text-sm text-muted-foreground">Subscription</div>
+              <div className="font-medium">{gp.subscriptionLevel || "BASIC"}</div>
+            </div>
           </div>
           {gp.address && (
             <div>

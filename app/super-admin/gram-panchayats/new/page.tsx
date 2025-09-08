@@ -8,6 +8,13 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { 
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue
+} from "@/components/ui/select";
+import { 
   ArrowLeft,
   Save,
   MapPin,
@@ -36,7 +43,8 @@ export default function NewGramPanchayatPage() {
     sarpanchName: '',
     secretaryName: '',
     phoneNumber: '',
-    email: ''
+    email: '',
+    subscriptionLevel: 'BASIC' as 'BASIC' | 'STANDARD' | 'PREMIUM' | 'ENTERPRISE'
   });
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -52,7 +60,8 @@ export default function NewGramPanchayatPage() {
         body: JSON.stringify({
           ...formData,
           population: formData.population ? parseInt(formData.population) : null,
-          area: formData.area ? parseFloat(formData.area) : null
+          area: formData.area ? parseFloat(formData.area) : null,
+          subscriptionLevel: formData.subscriptionLevel
         }),
       });
 
@@ -180,6 +189,36 @@ export default function NewGramPanchayatPage() {
                 placeholder="Enter complete address"
                 rows={3}
               />
+            </div>
+          </CardContent>
+        </Card>
+
+        {/* Subscription */}
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center">
+              <MapPin className="mr-2 h-5 w-5" />
+              Subscription
+            </CardTitle>
+            <CardDescription>Set subscription tier for access to features</CardDescription>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <div>
+              <Label htmlFor="subscriptionLevel">Subscription Level</Label>
+              <Select
+                value={formData.subscriptionLevel}
+                onValueChange={(v) => setFormData(prev => ({ ...prev, subscriptionLevel: v as any }))}
+              >
+                <SelectTrigger id="subscriptionLevel">
+                  <SelectValue placeholder="Select subscription" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="BASIC">BASIC</SelectItem>
+                  <SelectItem value="STANDARD">STANDARD</SelectItem>
+                  <SelectItem value="PREMIUM">PREMIUM</SelectItem>
+                  <SelectItem value="ENTERPRISE">ENTERPRISE</SelectItem>
+                </SelectContent>
+              </Select>
             </div>
           </CardContent>
         </Card>
