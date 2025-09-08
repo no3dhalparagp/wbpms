@@ -2,6 +2,7 @@
 "use client";
 
 import { useState } from "react";
+import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -55,6 +56,7 @@ export default function CorrectionRequestReview({
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [selectedRequest, setSelectedRequest] =
     useState<CorrectionRequest | null>(null);
+  const router = useRouter();
 
   const handleReview = async (requestId: string, approve: boolean) => {
     if (!reviewComments.trim() && !approve) {
@@ -96,6 +98,17 @@ export default function CorrectionRequestReview({
 
       setReviewComments("");
       setIsDialogOpen(false);
+
+      // If approved, redirect to generate page for regeneration
+      if (approve) {
+        const warishApplicationId =
+          selectedRequest?.warishApplicationId || data?.data?.warishApplicationId;
+        if (warishApplicationId) {
+          router.push(`/admin/manage-warish/generate?id=${encodeURIComponent(warishApplicationId)}&focusId=${encodeURIComponent(warishApplicationId)}`);
+          return;
+        }
+      }
+
       onRequestReviewed();
     } catch (error: any) {
       toast({

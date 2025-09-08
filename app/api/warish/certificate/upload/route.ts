@@ -10,6 +10,11 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: 'Missing fields' }, { status: 400 })
     }
 
+    // Delete any existing WarishCertificate documents for this application to make regeneration idempotent
+    await prisma.warishDocument.deleteMany({
+      where: { warishId, documentType: 'WarishCertificate' },
+    })
+
     const { url, public_id } = await uploadToCloudinary(base64, 'warish_certificates')
 
     await prisma.warishDocument.create({
