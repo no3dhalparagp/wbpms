@@ -2,7 +2,8 @@
 
 import type { WarishApplicationProps } from "@/types"
 import { Input } from "@/components/ui/input"
-import { useEffect, useState } from "react"
+import { useEffect, useMemo, useRef, useState } from "react"
+import { useSearchParams } from "next/navigation"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card"
 import { formatDate } from "@/utils/utils"
@@ -12,26 +13,65 @@ import { Button } from "@/components/ui/button"
 import { Search, ChevronLeft, ChevronRight, FileText, Download } from "lucide-react"
 
 export default function WarishGenerateListClient({ applications: initial }: { applications: WarishApplicationProps[] }) {
-  const [q, setQ] = useState("")
-  const [page, setPage] = useState(1)
+  const searchParams = useSearchParams()
+  const initialQ = useMemo(() => searchParams.get("q") || "", [searchParams])
+  const initialPage = useMemo(() => {
+    const p = parseInt(searchParams.get("page") || "1", 10)
+    return Number.isFinite(p) && p > 0 ? p : 1
+  }, [searchParams])
+  const initialFocusId = useMemo(() => searchParams.get("focusId") || searchParams.get("id") || "", [searchParams])
+
+  const [q, setQ] = useState(initialQ)
+  const [page, setPage] = useState(initialPage)
   const [pageSize] = useState(10)
   const [total, setTotal] = useState(initial.length)
   const [applications, setApplications] = useState<WarishApplicationProps[]>(initial)
+  const [focusId, setFocusId] = useState<string>(initialFocusId)
+  const [highlightId, setHighlightId] = useState<string>(initialFocusId)
+  const [adjustedForFocus, setAdjustedForFocus] = useState(false)
+  const rowRefs = useRef<Record<string, HTMLTableRowElement | null>>({})
 
   useEffect(() => {
     const controller = new AbortController()
     const run = async () => {
-      const url = `/api/warish/generate-ready?q=${encodeURIComponent(q)}&page=${page}&pageSize=${pageSize}`
+      const url = `/api/warish/generate-ready?q=${encodeURIComponent(q)}&page=${page}&pageSize=${pageSize}&focusId=${encodeURIComponent(focusId || "")}`
       const res = await fetch(url, { signal: controller.signal })
       if (res.ok) {
         const data = await res.json()
         setApplications(data.items)
         setTotal(data.total)
+        if (focusId && data.pageOfFocus && !adjustedForFocus && data.pageOfFocus !== page) {
+          setAdjustedForFocus(true)
+          setPage(data.pageOfFocus)
+        }
       }
     }
     run()
     return () => controller.abort()
-  }, [q, page, pageSize])
+  }, [q, page, pageSize, focusId, adjustedForFocus])
+
+  // Persist URL state
+  useEffect(() => {
+    if (typeof window === "undefined") return
+    const sp = new URLSearchParams(window.location.search)
+    if (q) sp.set("q", q); else sp.delete("q")
+    sp.set("page", String(page))
+    if (focusId) sp.set("focusId", focusId); else sp.delete("focusId")
+    const newUrl = `${window.location.pathname}?${sp.toString()}`
+    window.history.replaceState(null, "", newUrl)
+  }, [q, page, focusId])
+
+  // Scroll to and highlight the focused row when present
+  useEffect(() => {
+    if (!focusId) return
+    const row = rowRefs.current[focusId]
+    if (row) {
+      row.scrollIntoView({ behavior: "smooth", block: "center" })
+      setHighlightId(focusId)
+      const timeout = setTimeout(() => setHighlightId(""), 3000)
+      return () => clearTimeout(timeout)
+    }
+  }, [applications, focusId])
 
   const totalPages = Math.max(1, Math.ceil(total / pageSize))
 
@@ -73,7 +113,11 @@ export default function WarishGenerateListClient({ applications: initial }: { ap
             <TableBody>
               {applications.length > 0 ? (
                 applications.map((application, index) => (
-                  <TableRow key={application.id} className="border-b border-gray-100 dark:border-gray-800 hover:bg-gray-50 dark:hover:bg-gray-800/40 transition-colors">
+                  <TableRow
+                    key={application.id}
+                    ref={(el) => { rowRefs.current[application.id] = el }}
+                    className={`border-b border-gray-100 dark:border-gray-800 hover:bg-gray-50 dark:hover:bg-gray-800/40 transition-colors ${highlightId === application.id ? "ring-2 ring-primary/50 bg-yellow-50 dark:bg-yellow-900/10" : ""}`}
+                  >
                     <TableCell className="font-medium">{(page - 1) * pageSize + index + 1}</TableCell>
                     <TableCell className="font-semibold">{application.nameOfDeceased}</TableCell>
                     <TableCell>{application.applicantName}</TableCell>

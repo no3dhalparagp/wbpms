@@ -45,16 +45,24 @@ export async function PATCH(req: NextRequest, { params }: { params: { requestId:
     if (approve) {
       try {
         if (request.targetType === "detail" && request.warishDetailId) {
-          // Validate field exists and update
-
-       
+          // Update the specific warish detail field
           const updateData: any = {}
           updateData[request.fieldToModify] = request.proposedValue
-          
-          await prisma.warishDetail.update({
+
+          const updatedDetail = await prisma.warishDetail.update({
             where: { id: request.warishDetailId },
             data: updateData,
           })
+
+          // Remove any existing certificates for the parent application to force regeneration
+          if (updatedDetail.warishApplicationId) {
+            await prisma.warishDocument.deleteMany({
+              where: {
+                warishId: updatedDetail.warishApplicationId,
+                documentType: "WarishCertificate",
+              },
+            })
+          }
         } else if (request.targetType === "application" && request.warishApplicationId) {
           // Validate field exists and update
           const updateData: any = {}
@@ -65,12 +73,12 @@ export async function PATCH(req: NextRequest, { params }: { params: { requestId:
             data: updateData,
           })
 
-    
-
-          const warisholdcertificate = await prisma.warishDocument.deleteMany({
+          // Remove any existing certificates for the application to force regeneration
+          await prisma.warishDocument.deleteMany({
             where: {
-              warishId: warishdata.id
-            }
+              warishId: warishdata.id,
+              documentType: "WarishCertificate",
+            },
           })
         } else {
           return NextResponse.json(
