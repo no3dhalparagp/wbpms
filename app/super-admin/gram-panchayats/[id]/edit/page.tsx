@@ -8,6 +8,13 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Switch } from "@/components/ui/switch";
+import { 
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue
+} from "@/components/ui/select";
 import { ArrowLeft, Save, MapPin, Building, Phone, Mail, Users } from "lucide-react";
 import Link from "next/link";
 import { toast } from "sonner";
@@ -28,6 +35,7 @@ type Gp = {
   phoneNumber?: string | null;
   email?: string | null;
   isActive: boolean;
+  subscriptionLevel: "BASIC" | "STANDARD" | "PREMIUM" | "ENTERPRISE";
 };
 
 export default function EditGramPanchayatPage() {
@@ -52,6 +60,7 @@ export default function EditGramPanchayatPage() {
     phoneNumber: "",
     email: "",
     isActive: true,
+    subscriptionLevel: "BASIC" as "BASIC" | "STANDARD" | "PREMIUM" | "ENTERPRISE",
   });
 
   useEffect(() => {
@@ -79,6 +88,7 @@ export default function EditGramPanchayatPage() {
           phoneNumber: gp.phoneNumber || "",
           email: gp.email || "",
           isActive: gp.isActive,
+          subscriptionLevel: gp.subscriptionLevel || "BASIC",
         });
       } finally {
         setLoadingInitial(false);
@@ -98,6 +108,7 @@ export default function EditGramPanchayatPage() {
           ...formData,
           population: formData.population ? parseInt(formData.population) : null,
           area: formData.area ? parseFloat(formData.area) : null,
+          subscriptionLevel: formData.subscriptionLevel,
         }),
       });
       if (res.ok) {
@@ -177,6 +188,37 @@ export default function EditGramPanchayatPage() {
                 <div className="text-xs text-muted-foreground">Enable or disable this Gram Panchayat</div>
               </div>
               <Switch checked={formData.isActive} onCheckedChange={(v) => setFormData((p) => ({ ...p, isActive: v }))} />
+            </div>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center"><MapPin className="mr-2 h-5 w-5" /> Subscription</CardTitle>
+            <CardDescription>Set subscription tier for access to features</CardDescription>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <div>
+              <Label htmlFor="subscriptionLevel">Subscription Level</Label>
+              <Select
+                value={formData.subscriptionLevel}
+                onValueChange={(v) =>
+                  setFormData((p) => ({
+                    ...p,
+                    subscriptionLevel: v as "BASIC" | "STANDARD" | "PREMIUM" | "ENTERPRISE",
+                  }))
+                }
+              >
+                <SelectTrigger id="subscriptionLevel">
+                  <SelectValue placeholder="Select subscription" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="BASIC">BASIC</SelectItem>
+                  <SelectItem value="STANDARD">STANDARD</SelectItem>
+                  <SelectItem value="PREMIUM">PREMIUM</SelectItem>
+                  <SelectItem value="ENTERPRISE">ENTERPRISE</SelectItem>
+                </SelectContent>
+              </Select>
             </div>
           </CardContent>
         </Card>
