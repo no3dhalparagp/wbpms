@@ -307,6 +307,20 @@ export const adminMenuItems: MenuItemProps[] = [
     MdAssignmentTurnedIn,
     COLORS.orange
   ),
+  createMenuItem(
+    "Add Village",
+    ["ADMIN"],
+    `${BASE_URLS.ADMIN}/villages/new`,
+    MdHolidayVillage,
+    COLORS.purple
+  ),
+  createMenuItem(
+    "Add Ward",
+    ["ADMIN"],
+    `${BASE_URLS.ADMIN}/wards/new`,
+    MdAssignmentTurnedIn,
+    COLORS.green
+  ),
 ];
 
 export const employeeMenuItems: MenuItemProps[] = [
