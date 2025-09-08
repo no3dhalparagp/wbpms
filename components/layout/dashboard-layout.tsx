@@ -23,6 +23,7 @@ import {
 } from "@/constants/menu-constants";
 import useSWR from "swr";
 import { isFeatureEnabled, hasRequiredSubscription } from "@/lib/utils";
+import { ThemeToggle } from "@/components/theme-toggle";
 
 interface DashboardLayoutProps {
   children: ReactNode;
@@ -264,6 +265,7 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
           </div>
 
           <div className="flex items-center space-x-4">
+            <ThemeToggle />
             <Button variant="ghost" size="sm">
               <Bell className="h-4 w-4" />
             </Button>
