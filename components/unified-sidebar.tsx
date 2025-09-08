@@ -133,9 +133,6 @@ function SidebarContent({ role, subscription }: { role: Role, subscription: "BAS
             .map((item) => (
               <MenuItem key={item.menuItemText} item={item} userRole={role} subscriptionLevel={subscription} />
             ))}
-          {config.items.map((item) => (
-            <SidebarMenuItem key={item.menuItemText} item={item} userRole={role} subscriptionLevel={subscription} />
-          ))}
 
         </nav>
       </ScrollArea>

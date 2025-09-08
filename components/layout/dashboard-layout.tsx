@@ -22,7 +22,7 @@ import {
   type MenuItemProps,
 } from "@/constants/menu-constants";
 import useSWR from "swr";
-import { isFeatureEnabled } from "@/lib/utils";
+import { isFeatureEnabled, hasRequiredSubscription } from "@/lib/utils";
 
 interface DashboardLayoutProps {
   children: ReactNode;
@@ -91,9 +91,7 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
           </button>
           {isOpen && (
             <div className="mt-1 space-y-1 pl-4">
-              {item.subMenuItems
-                .filter((s) => isFeatureEnabled(s.featureKey, featureMap))
-                .map((sub) => renderMenuTree(sub, key, depth + 1))}
+              {item.subMenuItems.map((sub) => renderMenuTree(sub, key, depth + 1))}
             </div>
           )}
         </div>
@@ -130,6 +128,25 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
     (url: string) => fetch(url).then((r) => r.json())
   );
   const featureMap: Record<string, boolean> = data?.settings || {};
+  const currentSubscription = (session.user.subscriptionLevel || "BASIC") as
+    | "BASIC"
+    | "STANDARD"
+    | "PREMIUM"
+    | "ENTERPRISE";
+
+  const filterItems = (items: MenuItemProps[]): MenuItemProps[] =>
+    items
+      .filter(
+        (i) =>
+          isFeatureEnabled(i.featureKey, featureMap) &&
+          hasRequiredSubscription(currentSubscription, i.minSubscriptionLevel)
+      )
+      .map((i) => ({
+        ...i,
+        subMenuItems: filterItems(i.subMenuItems || []),
+      }));
+
+  const filteredMenuItems = filterItems(menuItems);
 
   return (
     <div className="min-h-screen bg-background">
@@ -185,9 +202,7 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
             </p>
           </div>
           <nav className="space-y-1">
-            {menuItems
-              .filter((i) => isFeatureEnabled(i.featureKey, featureMap))
-              .map((item) => renderMenuTree(item, "root"))}
+            {filteredMenuItems.map((item) => renderMenuTree(item, "root"))}
           </nav>
         </div>
 
@@ -237,6 +252,12 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
                 <>
                   <span>•</span>
                   <span>{session.user.gramPanchayat.name}</span>
+                </>
+              )}
+              {session.user.subscriptionLevel && (
+                <>
+                  <span>•</span>
+                  <span>{session.user.subscriptionLevel} Plan</span>
                 </>
               )}
             </div>
