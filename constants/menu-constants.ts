@@ -1,4 +1,4 @@
-import type { IconType } from "react-icons/lib";
+import type { IconType } from "react-icons";
 import {
   MdDashboard,
   MdAssessment,
@@ -391,6 +391,13 @@ export const superAdminMenuItems: MenuItemProps[] = [
     `${BASE_URLS.SUPER_ADMIN}/gram-panchayats/new`,
     MdPersonAdd,
     COLORS.purple
+  ),
+  createMenuItem(
+    "Menu Control",
+    ["SUPER_ADMIN"],
+    `${BASE_URLS.SUPER_ADMIN}/settings`,
+    MdSettingsApplications,
+    COLORS.indigo
   ),
   createMenuItem(
     "Reports",
