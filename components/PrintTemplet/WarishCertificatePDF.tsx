@@ -36,11 +36,13 @@ const getBase64FromUrl = async (url: string) => {
 type WarishCertificatePDFProps = {
   applicationDetails: WarishApplicationProps;
   mode?: "downloadOnly" | "uploadAndDownload";
+  onUploaded?: (warishApplicationId: string) => void;
 };
 
 export default function WarishCertificatePDF({
   applicationDetails,
   mode = "downloadOnly",
+  onUploaded,
 }: WarishCertificatePDFProps) {
   const [isGenerating, setIsGenerating] = useState(false);
 
@@ -190,6 +192,13 @@ export default function WarishCertificatePDF({
 
         if (!resp.ok) {
           throw new Error("Upload failed");
+        }
+
+        // Notify parent that the upload is done so the list can refresh
+        try {
+          onUploaded?.(applicationDetails.id);
+        } catch (_) {
+          // no-op
         }
       }
 

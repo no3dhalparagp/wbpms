@@ -133,9 +133,25 @@ export default function WarishGenerateListClient({ applications: initial }: { ap
                       </Badge>
                     </TableCell>
                     <TableCell className="text-right">
-                      <WarishCertificatePDF applicationDetails={application} mode="uploadAndDownload"/>
-                        
-                      
+                      <WarishCertificatePDF
+                        applicationDetails={application}
+                        mode="uploadAndDownload"
+                        onUploaded={() => {
+                          // After successful upload, refetch current page to refresh list
+                          setFocusId("")
+                          const controller = new AbortController()
+                          const url = `/api/warish/generate-ready?q=${encodeURIComponent(q)}&page=${page}&pageSize=${pageSize}`
+                          fetch(url, { signal: controller.signal })
+                            .then(async (res) => {
+                              if (res.ok) {
+                                const data = await res.json()
+                                setApplications(data.items)
+                                setTotal(data.total)
+                              }
+                            })
+                            .catch(() => {})
+                        }}
+                      />
                     </TableCell>
                   </TableRow>
                 ))
