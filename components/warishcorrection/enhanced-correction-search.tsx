@@ -11,6 +11,13 @@ import { Loader2 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { formatDate } from "@/utils/utils";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 
 export default function EnhancedCorrectionSearch({
   initialRequests,
@@ -19,7 +26,8 @@ export default function EnhancedCorrectionSearch({
   initialRequests: any[];
   initialApp: any;
 }) {
-  const [ack, setAck] = useState("");
+  const [searchType, setSearchType] = useState<"ack" | "reference">("ack");
+  const [searchValue, setSearchValue] = useState("");
   const [app, setApp] = useState(initialApp);
   const [requests, setRequests] = useState(initialRequests);
   const [error, setError] = useState("");
@@ -47,7 +55,7 @@ export default function EnhancedCorrectionSearch({
 
     try {
       const res = await fetch(
-        `/api/warish-application-by-ack?ack=${encodeURIComponent(ack)}`
+        `/api/warish-application-by-ack?search=${encodeURIComponent(searchValue)}`
       );
 
       if (!res.ok) {
@@ -58,7 +66,9 @@ export default function EnhancedCorrectionSearch({
       const data = await res.json();
 
       if (!data.app) {
-        throw new Error("No application found for this acknowledgement number");
+        throw new Error(
+          `No application found for this ${searchType === "ack" ? "acknowledgement" : "reference"} number`
+        );
       }
 
       setApp(data.app);
@@ -201,23 +211,50 @@ export default function EnhancedCorrectionSearch({
             className="flex flex-col sm:flex-row gap-4"
           >
             <div className="flex-1">
-              <Label htmlFor="ack" className="font-medium mb-2 block">
-                Acknowledgement Number
-              </Label>
-              <Input
-                id="ack"
-                type="text"
-                placeholder="Enter acknowledgement number"
-                value={ack}
-                onChange={(e) => setAck(e.target.value)}
-                className="w-full"
-                disabled={loading}
-              />
+              <div className="flex flex-col sm:flex-row gap-4">
+                <div className="w-full sm:w-40">
+                  <Label htmlFor="searchType" className="font-medium mb-2 block">
+                    Search By
+                  </Label>
+                  <Select
+                    value={searchType}
+                    onValueChange={(value: "ack" | "reference") =>
+                      setSearchType(value)
+                    }
+                  >
+                    <SelectTrigger id="searchType">
+                      <SelectValue placeholder="Search by" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="ack">Acknowledgement</SelectItem>
+                      <SelectItem value="reference">Reference No</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+                <div className="flex-1">
+                  <Label htmlFor="searchValue" className="font-medium mb-2 block">
+                    {searchType === "ack" ? "Acknowledgement Number" : "Reference Number"}
+                  </Label>
+                  <Input
+                    id="searchValue"
+                    type="text"
+                    placeholder={
+                      searchType === "ack"
+                        ? "Enter acknowledgement number"
+                        : "Enter reference number"
+                    }
+                    value={searchValue}
+                    onChange={(e) => setSearchValue(e.target.value)}
+                    className="w-full"
+                    disabled={loading}
+                  />
+                </div>
+              </div>
             </div>
             <div className="flex items-end">
               <Button
                 type="submit"
-                disabled={loading || !ack.trim()}
+                disabled={loading || !searchValue.trim()}
                 className="w-full sm:w-auto"
               >
                 {loading ? (
@@ -249,6 +286,11 @@ export default function EnhancedCorrectionSearch({
                   <Badge variant="secondary">
                     ACK: {app.acknowlegment || "N/A"}
                   </Badge>
+                  {app.referenceNumber && (
+                    <Badge variant="secondary">
+                      Ref: {app.referenceNumber}
+                    </Badge>
+                  )}
                   <Badge variant="secondary">
                     Status: {app.status || "Pending"}
                   </Badge>
