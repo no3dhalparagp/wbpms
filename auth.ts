@@ -93,6 +93,7 @@ const {
         session.user.aadharNumber = token.aadharNumber;
         session.user.joiningDate = token.joiningDate;
         session.user.gramPanchayat = token.gramPanchayat;
+        session.user.subscriptionLevel = token.subscriptionLevel as any;
       }
 
       return session;
@@ -138,9 +139,11 @@ const {
               code: true,
               district: true,
               state: true,
+              subscriptionLevel: true,
             },
           });
           token.gramPanchayat = gramPanchayat;
+          token.subscriptionLevel = (gramPanchayat as any)?.subscriptionLevel || 'BASIC';
         } catch (error) {
           console.error("Error fetching gram panchayat:", error);
         }

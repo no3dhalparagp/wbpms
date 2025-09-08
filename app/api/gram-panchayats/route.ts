@@ -22,6 +22,7 @@ export async function GET(request: NextRequest) {
         secretaryName: true,
         phoneNumber: true,
         email: true,
+        subscriptionLevel: true,
         createdAt: true,
         _count: {
           select: {
@@ -69,7 +70,8 @@ export async function POST(request: NextRequest) {
       sarpanchName,
       secretaryName,
       phoneNumber,
-      email
+      email,
+      subscriptionLevel
     } = await request.json();
 
     // Validate required fields
@@ -106,6 +108,7 @@ export async function POST(request: NextRequest) {
         secretaryName: secretaryName || null,
         phoneNumber: phoneNumber || null,
         email: email || null,
+        subscriptionLevel: subscriptionLevel || 'BASIC',
         isActive: true
       }
     });

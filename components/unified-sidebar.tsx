@@ -20,7 +20,7 @@ import type { RootState } from "@/redux/store";
 import { toggleMenu } from "@/redux/slices/menuSlice";
 import ImprovedFooter from "./improved-footer";
 import useSWR from "swr";
-import { isFeatureEnabled } from "@/lib/utils";
+import { hasRequiredSubscription, isFeatureEnabled } from "@/lib/utils";
 
 // Types
 type Role = "ADMIN" | "STAFF" | "SUPER_ADMIN";
@@ -46,13 +46,40 @@ const DASHBOARD_CONFIG: Record<Role, DashboardConfig> = {
 };
 
 // Components
-function MenuItem({ item, userRole }: { item: MenuItemProps; userRole: Role }) {
+const MenuItem: React.FC<{
+  item: MenuItemProps;
+  userRole: Role;
+  subscriptionLevel: "BASIC" | "STANDARD" | "PREMIUM" | "ENTERPRISE";
+}> = ({ item, userRole, subscriptionLevel }) => {
   if (isRestrictedForRole(item, userRole)) return null;
-=======
-const SidebarMenuItem: React.FC<{ item: MenuItemProps; userRole: Role }> = ({ item, userRole }) => {
+  if (!hasRequiredSubscription(subscriptionLevel, item.minSubscriptionLevel)) return null;
+  return (
+    <Button
+      asChild
+      variant="ghost"
+      className="w-full justify-start h-9 px-3 text-sm font-normal hover:bg-accent/50 transition-colors"
+    >
+      <Link href={item.menuItemLink || "#"}>
+        <div className="flex items-center space-x-3">
+          {item.Icon && (
+            <item.Icon
+              className={`h-4 w-4 ${item.color || "text-muted-foreground"}`}
+            />
+          )}
+          <span>{item.menuItemText}</span>
+        </div>
+      </Link>
+    </Button>
+  );
+};
+
+const SidebarMenuItem: React.FC<{ item: MenuItemProps; userRole: Role, subscriptionLevel: "BASIC" | "STANDARD" | "PREMIUM" | "ENTERPRISE" }> = ({ item, userRole, subscriptionLevel }) => {
   const normalizedRole = userRole;
 
   if (isRestrictedForRole(item, normalizedRole)) {
+    return null;
+  }
+  if (!hasRequiredSubscription(subscriptionLevel, item.minSubscriptionLevel)) {
     return null;
 }
 
@@ -76,7 +103,7 @@ const SidebarMenuItem: React.FC<{ item: MenuItemProps; userRole: Role }> = ({ it
   );
 };
 
-function SidebarContent({ role }: { role: Role }) {
+function SidebarContent({ role, subscription }: { role: Role, subscription: "BASIC" | "STANDARD" | "PREMIUM" | "ENTERPRISE" }) {
   const config = DASHBOARD_CONFIG[role];
   const { data } = useSWR<{ settings: Record<string, boolean> }>(
     "/api/system-settings",
@@ -104,10 +131,10 @@ function SidebarContent({ role }: { role: Role }) {
           {config.items
             .filter((i) => isFeatureEnabled(i.featureKey, featureMap))
             .map((item) => (
-              <MenuItem key={item.menuItemText} item={item} userRole={role} />
+              <MenuItem key={item.menuItemText} item={item} userRole={role} subscriptionLevel={subscription} />
             ))}
           {config.items.map((item) => (
-            <SidebarMenuItem key={item.menuItemText} item={item} userRole={role} />
+            <SidebarMenuItem key={item.menuItemText} item={item} userRole={role} subscriptionLevel={subscription} />
           ))}
 
         </nav>
@@ -118,8 +145,6 @@ function SidebarContent({ role }: { role: Role }) {
   );
 }
 
-
-export default function UnifiedSidebar({ role = "ADMIN" }: { role?: Role }) {
 
 export default function UnifiedSidebar({ role }: { role?: Role }) {
   const { data: session } = useSession();
@@ -141,6 +166,7 @@ export default function UnifiedSidebar({ role }: { role?: Role }) {
   if (!isMounted) return null;
 
   const userRole: Role = role || (session?.user?.role as Role) || "STAFF";
+  const subscription: "BASIC" | "STANDARD" | "PREMIUM" | "ENTERPRISE" = (session?.user?.subscriptionLevel as any) || "BASIC";
 
   return (
     <>
@@ -161,14 +187,14 @@ export default function UnifiedSidebar({ role }: { role?: Role }) {
             </Button>
           </SheetTrigger>
           <SheetContent side="left" className="p-0 w-64 shadow-xl border-0">
-            <SidebarContent role={userRole} />
+            <SidebarContent role={userRole} subscription={subscription} />
           </SheetContent>
         </Sheet>
       </div>
 
       {/* Desktop Menu */}
       <div className="hidden lg:block shadow-sm">
-        <SidebarContent role={userRole} />
+        <SidebarContent role={userRole} subscription={subscription} />
       </div>
     </>
   );

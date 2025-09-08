@@ -55,6 +55,7 @@ export async function PUT(
       secretaryName,
       phoneNumber,
       email,
+      subscriptionLevel,
       isActive,
     } = body || {};
 
@@ -77,6 +78,7 @@ export async function PUT(
     if (secretaryName !== undefined) updateData.secretaryName = secretaryName ? String(secretaryName) : null;
     if (phoneNumber !== undefined) updateData.phoneNumber = phoneNumber ? String(phoneNumber) : null;
     if (email !== undefined) updateData.email = email ? String(email) : null;
+    if (subscriptionLevel !== undefined) updateData.subscriptionLevel = String(subscriptionLevel).toUpperCase();
     if (isActive !== undefined) updateData.isActive = Boolean(isActive);
 
     // If code is updated, ensure uniqueness

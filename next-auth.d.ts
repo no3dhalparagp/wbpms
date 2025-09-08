@@ -23,6 +23,7 @@ export type ExtendedUser = DefaultSession["user"] & {
     district: string;
     state: string;
   };
+  subscriptionLevel?: "BASIC" | "STANDARD" | "PREMIUM" | "ENTERPRISE";
 };
 
 declare module "next-auth" {
@@ -52,5 +53,6 @@ declare module "next-auth/jwt" {
       district: string;
       state: string;
     };
+    subscriptionLevel?: "BASIC" | "STANDARD" | "PREMIUM" | "ENTERPRISE";
   }
 }
