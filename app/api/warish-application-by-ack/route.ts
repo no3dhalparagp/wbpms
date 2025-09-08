@@ -1,11 +1,11 @@
 import { NextRequest, NextResponse } from "next/server";
-import { db } from "@/lib/db";
+import {prisma} from "@/lib/prisma";
 
 export async function GET(req: NextRequest) {
   const ack = req.nextUrl.searchParams.get("ack");
   if (!ack) return NextResponse.json({ app: null });
 
-  const app = await db.warishApplication.findUnique({
+  const app = await prisma.warishApplication.findUnique({
     where: { acknowlegment: ack },
     include:{ warishDetails: true },
     
