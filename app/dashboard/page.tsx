@@ -2,6 +2,7 @@ import { requireStaff } from "@/lib/auth-utils"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { Users, Shield, Settings, Activity } from "lucide-react"
+import { CreditCard } from "lucide-react"
 
 export default async function DashboardPage() {
   const session = await requireStaff()
@@ -58,6 +59,16 @@ export default async function DashboardPage() {
             <div className="text-2xl font-bold">
               {session.user.role === "SUPER_ADMIN" ? "Full" : session.user.role === "ADMIN" ? "Admin" : "Standard"}
             </div>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium">Subscription Plan</CardTitle>
+            <CreditCard className="h-4 w-4 text-muted-foreground" />
+          </CardHeader>
+          <CardContent>
+            <Badge variant="secondary">{(session.user.subscriptionLevel || "BASIC") + " Plan"}</Badge>
           </CardContent>
         </Card>
 
