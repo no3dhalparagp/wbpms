@@ -340,6 +340,36 @@ npm start
 - ✅ **Feature Documentation**: Detailed feature explanations
 - ✅ **Troubleshooting**: Common issues and solutions
 
+## 🔏 **Digital Signature (DSC) via emBridge**
+
+### Overview
+The app can sign generated PDFs using a locally running emBridge/EmSigner service. If unavailable, it gracefully falls back to unsigned PDFs with a toast notification.
+
+### Configuration
+- Ensure emBridge/EmSigner is installed and running.
+- If the service runs on a non-default host/port, configure one of:
+  - In the browser before generating: `window.EM_BRIDGE_BASE_URL = "http://localhost:1585"`
+  - Or set `NEXT_PUBLIC_EM_BRIDGE_BASE_URL` in your `.env.local` and rebuild.
+
+### Flow in Warish Certificate
+- The Warish certificate component `components/PrintTemplet/WarishCertificatePDF.tsx`:
+  - Generates the PDF from the JSON template.
+  - Converts the PDF to base64.
+  - Attempts to sign using `lib/embridge.ts` with reason/location/contact info.
+  - Uses the signed file if successful; otherwise uses the unsigned original.
+  - In upload mode, uploads the chosen PDF; it always downloads the chosen PDF.
+  - Shows toast messages for signed/unsigned outcomes.
+
+### Where to trigger
+- Admin flow: `app/admin/manage-warish/generate/page.tsx`
+- Staff flow: Use the generate action in the Staff UI where available.
+
+### Notes
+- The client tries common local endpoints on the base URL: `/sign`, `/api/sign`, `/dsc/sign`, `/emsigner/sign`.
+- Request body contains `{ file: <base64-pdf>, reason, location, contactInfo }`.
+- Response is expected to include a signed PDF in one of: `signedFile`, `signedPdf`, `file`, `base64`, or `data`.
+- If the exact endpoint or fields differ in your emBridge setup, adjust `lib/embridge.ts` accordingly.
+
 ## 🔄 **Future Enhancements**
 
 ### **Planned Features**
