@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import React, { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { toast } from "@/components/ui/use-toast";
 import { generatePDF } from "../pdfgenerator";
@@ -14,6 +14,7 @@ import {
 import { Printer, Loader2 } from "lucide-react";
 import { formatDate } from "@/utils/utils";
 import { domain_url } from "@/constants";
+import { signPdfWithEmBridge } from "@/lib/embridge";
 const templatePath = "/templates/warishcertificate.json";
 
 // Function to convert image to base64
@@ -158,32 +159,75 @@ export default function WarishCertificatePDF({
       ];
 
       const pdf = await generatePDF(templatePath, inputs);
-      const blob = new Blob([pdf], { type: "application/pdf" });
+
+      // Convert generated PDF (Uint8Array) to Blob
+      const unsignedBlob = new Blob([pdf], { type: "application/pdf" });
+
+      // Convert Blob to base64 for signing and optional upload
+      const unsignedBase64: string = await new Promise((resolve, reject) => {
+        const reader = new FileReader();
+        reader.onloadend = () => {
+          const result = reader.result as string | null;
+          if (!result) {
+            reject(new Error("Failed to read PDF blob as data URL"));
+            return;
+          }
+          const commaIndex = result.indexOf(",");
+          resolve(commaIndex >= 0 ? result.substring(commaIndex + 1) : result);
+        };
+        reader.onerror = () => reject(reader.error || new Error("FileReader error"));
+        reader.readAsDataURL(unsignedBlob);
+      });
+
+      // Try to sign via emBridge
+      const signResult = await signPdfWithEmBridge(unsignedBase64, {
+        reason: "Approved by Gram Panchayat",
+        location: "Dhalpara, Dakshin Dinajpur",
+        contactInfo: "info@dhalparagp.in",
+      });
+
+      const normalizeBase64 = (b64: string) => {
+        const i = b64.indexOf(",");
+        const raw = i >= 0 ? b64.substring(i + 1) : b64;
+        return raw.replace(/^data:application\/pdf;base64,/i, "").trim();
+      };
+
+      const base64ToBlob = (b64: string) => {
+        const raw = atob(b64);
+        const bytes = new Uint8Array(raw.length);
+        for (let i = 0; i < raw.length; i++) bytes[i] = raw.charCodeAt(i);
+        return new Blob([bytes], { type: "application/pdf" });
+      };
+
+      const finalBase64 = signResult.ok && signResult.signedPdfBase64
+        ? normalizeBase64(signResult.signedPdfBase64)
+        : unsignedBase64;
+      const finalBlob = signResult.ok && signResult.signedPdfBase64
+        ? base64ToBlob(finalBase64)
+        : unsignedBlob;
+
+      if (signResult.ok) {
+        toast({
+          title: "Digitally signed",
+          description: "PDF signed using emBridge DSC",
+          variant: "default",
+        });
+      } else {
+        toast({
+          title: "Signer not available",
+          description: "Generated unsigned PDF (emBridge not reachable)",
+          variant: "default",
+        });
+      }
 
       if (mode === "uploadAndDownload") {
-        const base64Data: string = await new Promise((resolve, reject) => {
-          const reader = new FileReader();
-          reader.onloadend = () => {
-            const result = reader.result as string | null;
-            if (!result) {
-              reject(new Error("Failed to read PDF blob as data URL"));
-              return;
-            }
-            // result format: data:application/pdf;base64,AAAA...
-            const commaIndex = result.indexOf(",");
-            resolve(commaIndex >= 0 ? result.substring(commaIndex + 1) : result);
-          };
-          reader.onerror = () => reject(reader.error || new Error("FileReader error"));
-          reader.readAsDataURL(blob);
-        });
-
         const resp = await fetch("/api/warish/certificate/upload", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({
             fileName: `warish_certificate_${applicationDetails.id || "unknown"}.pdf`,
             fileType: "application/pdf",
-            base64: `data:application/pdf;base64,${base64Data}`,
+            base64: `data:application/pdf;base64,${finalBase64}`,
             warishId: applicationDetails.id,
           }),
         });
@@ -194,7 +238,7 @@ export default function WarishCertificatePDF({
       }
 
       // Always provide a download to the user
-      const url = URL.createObjectURL(blob);
+      const url = URL.createObjectURL(finalBlob);
       const link = document.createElement("a");
       link.href = url;
       link.download = `warish_certificate_${applicationDetails.id || "unknown"}.pdf`;
