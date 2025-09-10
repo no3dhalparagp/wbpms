@@ -3,7 +3,6 @@ export const revalidate = 0;
 export const runtime = "nodejs";
 
 import { requireAdmin } from "@/lib/auth-utils";
-import type React from "react";
 
 type PageProps = {
   params: { slug?: string[] };
