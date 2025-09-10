@@ -6,7 +6,7 @@ import { signOut, useSession } from "next-auth/react"
 import { Button } from "@/components/ui/button"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover"
-import { LogOut, Settings, User } from 'lucide-react'
+import { LogOut, Settings, User, KeyRound } from 'lucide-react'
 
 export default function ImprovedFooter() {
     const [isOpen, setIsOpen] = useState(false)
@@ -19,11 +19,14 @@ export default function ImprovedFooter() {
     }
 
     const handleSettings = () => {
-        router.push('/admindashboard/settings')
+        router.push('/super-admin/settings')
     }
 
     const handleProfile = () => {
-        router.push('/admindashboard/profile')
+        router.push('/profile')
+    }
+    const handleChangePassword = () => {
+        router.push('/profile/change-password')
     }
 
     if (!session?.user) {
@@ -65,6 +68,14 @@ export default function ImprovedFooter() {
                         >
                             <User className="mr-2 h-4 w-4 text-gray-700 dark:text-gray-300" />
                             <span className="text-gray-700 dark:text-gray-300">Profile</span>
+                        </Button>
+                        <Button 
+                            variant="ghost" 
+                            className="w-full justify-start px-3 py-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800"
+                            onClick={() => { handleChangePassword(); setIsOpen(false); }}
+                        >
+                            <KeyRound className="mr-2 h-4 w-4 text-gray-700 dark:text-gray-300" />
+                            <span className="text-gray-700 dark:text-gray-300">Change Password</span>
                         </Button>
                         <Button 
                             variant="ghost" 
