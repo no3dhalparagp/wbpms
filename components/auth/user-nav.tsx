@@ -11,7 +11,8 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
 import { signOut, useSession } from "next-auth/react"
-import { LogOut, Settings, User } from "lucide-react"
+import { LogOut, Settings, User, KeyRound } from "lucide-react"
+import Link from "next/link"
 
 export function UserNav() {
   const { data: session } = useSession()
@@ -52,14 +53,23 @@ export function UserNav() {
           </div>
         </DropdownMenuLabel>
         <DropdownMenuSeparator />
-        <DropdownMenuItem>
-          <User className="mr-2 h-4 w-4" />
-          <span>Profile</span>
+        <DropdownMenuItem asChild>
+          <Link href="/profile">
+            <div className="flex items-center"><User className="mr-2 h-4 w-4" /><span>Profile</span></div>
+          </Link>
         </DropdownMenuItem>
-        <DropdownMenuItem>
-          <Settings className="mr-2 h-4 w-4" />
-          <span>Settings</span>
+        <DropdownMenuItem asChild>
+          <Link href="/profile/change-password">
+            <div className="flex items-center"><KeyRound className="mr-2 h-4 w-4" /><span>Change Password</span></div>
+          </Link>
         </DropdownMenuItem>
+        {session.user?.role === "SUPER_ADMIN" && (
+          <DropdownMenuItem asChild>
+            <Link href="/super-admin/settings">
+              <div className="flex items-center"><Settings className="mr-2 h-4 w-4" /><span>Settings</span></div>
+            </Link>
+          </DropdownMenuItem>
+        )}
         <DropdownMenuSeparator />
         <DropdownMenuItem onClick={() => signOut({ callbackUrl: "/auth/signin" })}>
           <LogOut className="mr-2 h-4 w-4" />

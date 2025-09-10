@@ -95,6 +95,20 @@ export const adminMenuItems: MenuItemProps[] = [
     COLORS.blue
   ),
   createMenuItem(
+    "Profile",
+    ["ADMIN"],
+    `/profile`,
+    MdPersonAdd,
+    COLORS.purple
+  ),
+  createMenuItem(
+    "Change Password",
+    ["ADMIN"],
+    `/profile/change-password`,
+    FaKey,
+    COLORS.gray
+  ),
+  createMenuItem(
     "Inheritance Certificate",
     ["ADMIN"],
     undefined,
@@ -408,6 +422,13 @@ export const employeeMenuItems: MenuItemProps[] = [
     COLORS.purple
   ),
   createMenuItem(
+    "Change Password",
+    ["STAFF"],
+    `/profile/change-password`,
+    FaKey,
+    COLORS.gray
+  ),
+  createMenuItem(
     "GP Info",
     ["STAFF"],
     `${BASE_URLS.STAFF}/gram-panchayat`,
@@ -426,6 +447,20 @@ export const superAdminMenuItems: MenuItemProps[] = [
     `${BASE_URLS.SUPER_ADMIN}`,
     MdDashboard,
     COLORS.blue
+  ),
+  createMenuItem(
+    "Profile",
+    ["SUPER_ADMIN"],
+    `/profile`,
+    MdPersonAdd,
+    COLORS.purple
+  ),
+  createMenuItem(
+    "Change Password",
+    ["SUPER_ADMIN"],
+    `/profile/change-password`,
+    FaKey,
+    COLORS.gray
   ),
   createMenuItem(
     "Users",
