@@ -41,17 +41,17 @@ This system implements a unique multi-database architecture where:
 
 ### 1. Clone and Install Dependencies
 
-\`\`\`bash
+```bash
 git clone <repository-url>
 cd nextjs-multi-db-auth
 npm install
-\`\`\`
+```
 
 ### 2. Environment Variables
 
 Create a `.env.local` file with the following variables:
 
-\`\`\`env
+```env
 # Master Database (for user lookup and database configurations)
 MASTER_DATABASE_URL="mongodb+srv://username:password@master-cluster.mongodb.net/master?retryWrites=true&w=majority"
 DATABASE_URL="mongodb+srv://username:password@master-cluster.mongodb.net/master?retryWrites=true&w=majority"
@@ -67,9 +67,12 @@ NEXTAUTH_SECRET="your-super-secret-key-here"
 GOOGLE_CLIENT_ID="your-google-client-id"
 GOOGLE_CLIENT_SECRET="your-google-client-secret"
 
+# Optional: Local DSC signer (emBridge/EmSigner)
+NEXT_PUBLIC_EM_BRIDGE_BASE_URL="http://127.0.0.1:12090"
+
 # Optional: User-specific database URLs
 # DATABASE_URL_USER_123="mongodb+srv://user123:password@user123-cluster.mongodb.net/user123db"
-\`\`\`
+```
 
 ### 3. Database Setup
 
@@ -79,16 +82,16 @@ GOOGLE_CLIENT_SECRET="your-google-client-secret"
    - Additional clusters for user isolation (optional)
 
 2. **Initialize Database Schema**:
-\`\`\`bash
+```bash
 npx prisma generate
 npx prisma db push
-\`\`\`
+```
 
 3. **Seed Initial Data**:
-\`\`\`bash
+```bash
 # Run the database initialization scripts
 npm run db:init
-\`\`\`
+```
 
 ### 4. Google OAuth Setup
 
@@ -102,15 +105,39 @@ npm run db:init
 
 ### 5. Run Development Server
 
-\`\`\`bash
+```bash
 npm run dev
-\`\`\`
+```
 
 Visit `http://localhost:3000` to see the application.
 
+## 🔏 DSC Signing (emBridge)
+
+This app can digitally sign generated PDFs via a local emBridge/EmSigner service when available.
+
+### Setup
+- Install and run the local signer (emBridge/EmSigner). See vendor docs.
+- If the signer runs on a non-default host/port, configure one of:
+  - In browser console before generating: `window.EM_BRIDGE_BASE_URL = "http://localhost:1585"`
+  - Or set env var `NEXT_PUBLIC_EM_BRIDGE_BASE_URL` and rebuild.
+
+### How it works
+- The client posts `{ file: <base64-pdf>, reason, location, contactInfo }` to common local endpoints on the base URL it detects:
+  - `/sign`, `/api/sign`, `/dsc/sign`, `/emsigner/sign`
+- It uses the first successful response and reads the signed PDF from one of: `signedFile`, `signedPdf`, `file`, `base64`, or `data`.
+- If signing fails or the service is unreachable, it falls back to the unsigned PDF and shows a toast.
+
+### Generate a signed Warish certificate
+- Admin: `app/admin/manage-warish/generate/page.tsx`
+- Staff: relevant generate action in Staff flows
+- When generating:
+  - The PDF is produced, converted to base64, and signing is attempted.
+  - If signing succeeds, the signed PDF is downloaded (and uploaded if that mode is enabled).
+  - If signing is unavailable, the unsigned PDF is downloaded, and a toast indicates the fallback.
+
 ## 🏛️ Project Structure
 
-\`\`\`
+```
 ├── app/
 │   ├── actions/           # Server actions for database operations
 │   ├── admin/            # Admin dashboard and user management
@@ -134,7 +161,7 @@ Visit `http://localhost:3000` to see the application.
 ├── prisma/
 │   └── schema.prisma     # Database schema
 └── scripts/              # Database initialization scripts
-\`\`\`
+```
 
 ## 🔐 Role-Based Access Control
 
@@ -178,11 +205,11 @@ Visit `http://localhost:3000` to see the application.
 ### Vercel Deployment
 
 1. **Push to GitHub**:
-\`\`\`bash
+```bash
 git add .
 git commit -m "Initial commit"
 git push origin main
-\`\`\`
+```
 
 2. **Deploy to Vercel**:
    - Connect your GitHub repository
@@ -236,15 +263,15 @@ Ensure all environment variables are properly set in your deployment platform:
 ### Debug Mode
 Enable debug logging by adding console.log statements with `[v0]` prefix:
 
-\`\`\`typescript
+```typescript
 console.log("[v0] User database connection:", databaseId)
-\`\`\`
+```
 
 ## 📚 API Reference
 
 ### Multi-Database Functions
 
-\`\`\`typescript
+```typescript
 // Get user's specific database client
 const userClient = await getUserPrismaClient(userId)
 
@@ -253,11 +280,11 @@ const userClient = await getUserPrismaClientByEmail(email)
 
 // Get master database client
 const masterClient = await getMasterPrismaClient()
-\`\`\`
+```
 
 ### Authentication Utilities
 
-\`\`\`typescript
+```typescript
 // Require specific roles
 await requireSuperAdmin()
 await requireAdmin() 
@@ -265,7 +292,7 @@ await requireStaff()
 
 // Check user permissions
 const hasPermission = await checkUserRole(userId, 'ADMIN')
-\`\`\`
+```
 
 ## 🤝 Contributing
 
