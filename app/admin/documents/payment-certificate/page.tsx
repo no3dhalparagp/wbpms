@@ -1,4 +1,4 @@
-import { db } from "@/lib/db";
+import { prisma } from "@/lib/prisma";
 
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 
@@ -47,7 +47,7 @@ async function getPaymentDetails(params: { financialYear?: string; from?: string
     };
   }
 
-  return await db.worksDetail.findMany({
+  return await prisma.worksDetail.findMany({
     where: whereClause,
     include: {
       nitDetails: true,

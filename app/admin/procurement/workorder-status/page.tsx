@@ -11,7 +11,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Search } from "lucide-react";
 import { formatDate } from "@/utils/utils";
-import { db } from "@/lib/db";
+import { prisma } from "@/lib/prisma";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { WorkOrderActions } from "@/components/work-order-actions";
 import { WorkOrderStatus } from "@/components/work-order-status";
@@ -24,7 +24,7 @@ export default async function AwardOfContractPage({
 }: {
   searchParams: { [key: string]: string | string[] | undefined };
 }) {
-  const allWorkOrders = await db.workorderdetails.findMany({
+  const allWorkOrders = await prisma.workorderdetails.findMany({
     where: {
       Bidagency: {
         WorksDetail: {

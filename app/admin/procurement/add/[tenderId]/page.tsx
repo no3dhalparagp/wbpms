@@ -1,17 +1,18 @@
 import { Suspense } from "react";
 import { notFound } from "next/navigation";
-import { db } from "@/lib/db";
+import { prisma } from "@/lib/prisma";
 import WorkDetailsList from "./WorkDetailsList";
-import AddWorkDetaisForm from "@/components/form/AddWorkDetaisForm";
+
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
+import AddWorkDetailsForm from "@/components/procurmentform/AddWorkDetaisForm";
 
 interface PageProps {
   params: { tenderId: string };
 }
 
 async function fetchWorkDetails(tenderId: string) {
-  const workDetails = await db.nitDetails.findUnique({
+  const workDetails = await prisma.nitDetails.findUnique({
     where: { id: tenderId },
     include: {
       WorksDetail: {
@@ -39,7 +40,7 @@ export default async function Page({ params }: PageProps) {
           <h1 className="text-2xl sm:text-3xl font-bold text-gray-800 border-b pb-3 sm:pb-4 mb-6 sm:mb-8">
             Work Details Management
           </h1>
-          
+
           <div className="flex flex-col lg:flex-row gap-5 sm:gap-6 md:gap-8">
             <Card className="lg:w-1/2">
               <CardHeader className="pb-3">
@@ -48,7 +49,7 @@ export default async function Page({ params }: PageProps) {
                 </CardTitle>
               </CardHeader>
               <CardContent>
-                <AddWorkDetaisForm tenderId={params.tenderId} />
+                <AddWorkDetailsForm tenderId={params.tenderId} />
               </CardContent>
             </Card>
 

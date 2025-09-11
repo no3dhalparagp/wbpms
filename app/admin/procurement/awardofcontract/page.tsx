@@ -1,9 +1,10 @@
-// app/(protected)/admindashboard/manage-tender/awardofcontract/page.tsx
-import { db } from "@/lib/db";
-import AOCForm from "@/components/AOCForm";
+import AOCForm from "@/components/procurmentform/AOCForm";
+import { prisma } from "@/lib/prisma";
+
+
 
 export default async function CreateAOCPage() {
-  const works = await db.worksDetail.findMany({
+  const works = await prisma.worksDetail.findMany({
     where: {
       tenderStatus: "FinancialEvaluation",
       AOCDetails: {

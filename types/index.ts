@@ -7,6 +7,7 @@ import {
   Prisma,
 } from "@prisma/client";
 
+import * as z from "zod";
 import "next-auth/jwt";
 
 export type SignedURLResponse = Promise<

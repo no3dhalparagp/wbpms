@@ -1,7 +1,7 @@
 // app/admindashboard/manage-tender/addtechnicaldetails/[workid]/page.tsx
 import Link from "next/link";
-import { db } from "@/lib/db";
-import { Plus, ChevronLeft, CheckCircle, XCircle } from "lucide-react";
+import { prisma } from "@/lib/prisma";
+import { ChevronLeft, CheckCircle, XCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -18,17 +18,18 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import AddTechnicalDetailsDialog from "@/components/AddTechnicalDetailsDialog";
-import { sentforfinanicalbidadd } from "@/action/bookNitNuber";
+
 import { ShowWorkDetails } from "@/components/Work-details";
-import { TechnicalDetailsDialog } from "@/components/TechnicalDetailsDialog";
+
 import { SubmitButton } from "@/components/submit-button";
 import AddTechnicalDetailsButton from "./AddTechnicalDetailsButton";
+import { TechnicalDetailsDialog } from "@/components/procurmentform/TechnicalDetailsDialog";
+import { sentforfinanicalbidadd } from "@/app/actions/procurement/bookNitNuber";
 
 const Page = async ({ params }: { params: { workid: string[] } }) => {
   const [workid] = params.workid || [];
 
-  const technical = await db.bidagency.findMany({
+  const technical = await prisma.bidagency.findMany({
     where: { worksDetailId: workid },
     include: {
       agencydetails: true,

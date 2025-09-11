@@ -1,4 +1,4 @@
-import { db } from "@/lib/db";
+import { prisma } from "@/lib/prisma";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import {
@@ -10,13 +10,13 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { InfoIcon } from "lucide-react";
-import { updateWorkStatus } from "@/action/updateWorkStatus";
+import { updateWorkStatus } from "@/app/actions/procurement/updateWorkStatus";
 import { formatDate } from "@/utils/utils";
 import { ShowNitDetails } from "@/components/ShowNitDetails";
 import WorkStatusForm from "@/components/WorkStatusForm"; // New component
 
 const WorkStatusChangePage = async () => {
-  const workList = await db.worksDetail.findMany({
+  const workList = await prisma.worksDetail.findMany({
     where: {
       workStatus: {
         not: "billpaid",

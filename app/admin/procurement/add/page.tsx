@@ -1,7 +1,7 @@
-import BookNitForm from "@/components/form/BookNitForm";
+import BookNitForm from "@/components/procurmentform/BookNitForm";
 import Link from "next/link";
 import { Eye, Pencil, ChevronRight, Search, Filter } from "lucide-react";
-import { db } from "@/lib/db";
+import { prisma } from "@/lib/prisma";
 import { formatDate } from "@/utils/utils";
 import { NITCopy } from "@/components/PrintTemplet/PrintNIt-copy";
 import {
@@ -28,9 +28,10 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { Badge } from "@/components/ui/badge";
+import { gpcode } from "@/constants/gpinfor";
 
 const CreateTender = async () => {
-  const latestNits = await db.nitDetails.findMany({
+  const latestNits = await prisma.nitDetails.findMany({
     take: 10,
     orderBy: { createdAt: "desc" },
     include: {
@@ -135,7 +136,8 @@ const CreateTender = async () => {
                           <TableCell className="font-medium">
                             <div className="flex flex-col">
                               <span className="text-sm">
-                                {nit.memoNumber}/DGP/{nit.memoDate.getFullYear()}
+                                {nit.memoNumber}/${gpcode}/
+                                {nit.memoDate.getFullYear()}
                               </span>
                               <span className="text-xs text-gray-500">
                                 {formatDate(nit.createdAt)}
@@ -144,7 +146,9 @@ const CreateTender = async () => {
                           </TableCell>
                           <TableCell>
                             <Badge
-                              variant={nit.isPublished ? "default" : "secondary"}
+                              variant={
+                                nit.isPublished ? "default" : "secondary"
+                              }
                               className={
                                 nit.isPublished
                                   ? "bg-green-100 text-green-800 hover:bg-green-100"
@@ -164,7 +168,7 @@ const CreateTender = async () => {
                                   className="h-8 w-8 p-0 text-blue-600 hover:text-blue-800 hover:bg-blue-50"
                                 >
                                   <Link
-                                    href={`/admindashboard/manage-tender/add/${nit.id}`}
+                                    href={`/admin/add/${nit.id}`}
                                     title="Edit"
                                   >
                                     <Pencil className="h-4 w-4" />
@@ -179,7 +183,7 @@ const CreateTender = async () => {
                                 className="h-8 w-8 p-0 text-gray-600 hover:text-gray-800 hover:bg-gray-50"
                               >
                                 <Link
-                                  href={`/admindashboard/manage-tender/view/${nit.id}`}
+                                  href={`/admin/procurement/view/${nit.id}`}
                                   title="View"
                                 >
                                   <Eye className="h-4 w-4" />
@@ -196,7 +200,7 @@ const CreateTender = async () => {
                 </Table>
                 <div className="border-t p-4">
                   <Button variant="outline" className="w-full" asChild>
-                    <Link href="/admindashboard/manage-tender/view">
+                    <Link href="/admin/view">
                       View All Tenders
                       <ChevronRight className="ml-2 h-4 w-4" />
                     </Link>

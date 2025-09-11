@@ -1,4 +1,4 @@
-import { db } from "@/lib/db";
+import { prisma } from "@/lib/prisma";
 import { revalidatePath } from "next/cache";
 import { Button } from "@/components/ui/button";
 import {
@@ -21,8 +21,10 @@ import {
 } from "@/components/ui/select";
 import { Badge } from "@/components/ui/badge";
 import { TenderStatus } from "@prisma/client";
-import { updatenitstatus } from "@/action/bookNitNuber";
+
 import { ShowNitDetails } from "@/components/ShowNitDetails";
+
+import { updatenitstatus } from "@/app/actions/procurement/bookNitNuber";
 const statusVariants: Record<
   TenderStatus,
   "destructive" | "success" | "warning" | "default"
@@ -52,16 +54,16 @@ async function updateTenderStatus(formData: FormData) {
     await updatenitstatus(id, status);
   }
 
-  await db.worksDetail.update({
+  await prisma.worksDetail.update({
     where: { id },
     data: updateData,
   });
 
-  revalidatePath("/admindashboard/manage-tender/cancel-tender");
+  revalidatePath("/admin/cancel-tender");
 }
 
 const CancelTenderPage = async () => {
-  const canceltenders = await db.worksDetail.findMany({
+  const canceltenders = await prisma.worksDetail.findMany({
     where: {
       tenderStatus: {
         notIn: ["Cancelled", "AOC"],

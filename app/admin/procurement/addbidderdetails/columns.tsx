@@ -3,7 +3,8 @@
 import type { ColumnDef } from "@tanstack/react-table"
 import type { NitDetailsProps } from "@/types/tender-manage"
 import { formatDate } from "@/utils/utils"
-import AddBidderDialog from "@/components/bidder-management-dialog"
+import AddBidderDialog from "@/components/admin/bidder-management-dialog"
+
 
 
 export const columns: ColumnDef<NitDetailsProps>[] = [

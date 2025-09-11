@@ -13,12 +13,12 @@ import {
 } from "@/components/ui/table";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { db } from "@/lib/db";
+import { prisma } from "@/lib/prisma";
 import { formatDateTime } from "@/utils/utils";
 import { ShowNitDetails } from "@/components/ShowNitDetails";
 
 const TechnicalEvaluationPage = async () => {
-  const nitdetails = await db.nitDetails.findMany({
+  const nitdetails = await prisma.nitDetails.findMany({
     include: {
       WorksDetail: {
         where: {

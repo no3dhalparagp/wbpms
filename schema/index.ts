@@ -9,12 +9,15 @@ export const LoginSchema = z.object({
     message: "Password is required",
   }),
   code: z.optional(z.string()),
-  rememberMe: z.union([z.boolean(), z.string()]).transform((val) => {
-    if (typeof val === "string") {
-      return val === "true" || val === "on";
-    }
-    return val;
-  }).default(false),
+  rememberMe: z
+    .union([z.boolean(), z.string()])
+    .transform((val) => {
+      if (typeof val === "string") {
+        return val === "true" || val === "on";
+      }
+      return val;
+    })
+    .default(false),
 });
 
 export const ResetSchema = z.object({
@@ -188,3 +191,107 @@ export const SearchSchema = z.object({
     .max(100, "Search term is too long"),
 });
 
+export const NitBookValidationSchema = z
+  .object({
+    tendermemonumber: z
+      .string()
+      .nonempty("Tender Reference Number is required"),
+    tendermemodate: z.coerce.date({
+      required_error: "Memo date is required",
+      invalid_type_error: "Invalid date format",
+    }),
+    tender_pulishing_Date: z.coerce.date({
+      required_error: "Publishing date is required",
+      invalid_type_error: "Invalid date format",
+    }),
+    tender_document_Download_from: z.coerce.date({
+      required_error: "Document download date is required",
+      invalid_type_error: "Invalid date format",
+    }),
+    tender_start_time_from: z.coerce.date({
+      required_error: "Start time is required",
+      invalid_type_error: "Invalid date format",
+    }),
+    tender_end_date_time_from: z.coerce.date({
+      required_error: "End date/time is required",
+      invalid_type_error: "Invalid date format",
+    }),
+    tender_techinical_bid_opening_date: z.coerce.date({
+      required_error: "Technical bid opening date is required",
+      invalid_type_error: "Invalid date format",
+    }),
+    tender_financial_bid_opening_date: z.coerce
+      .date({
+        required_error: "Financial bid opening date is required",
+        invalid_type_error: "Invalid date format",
+      })
+      .optional(),
+    tender_place_opening_bids: z
+      .string()
+      .nonempty("Place for Opening Bids is required")
+      .min(3, "Place name must be at least 3 characters"),
+    tender_vilidity_bids: z
+      .string()
+      .nonempty("Validity of Bids is required")
+      .regex(/^\d+$/, "Validity must be a number"),
+    supplynit: z.boolean().default(false),
+    supplyitemname: z.string().optional(),
+    nitCount: z
+      .string()
+      .nonempty("Call count is required")
+      .regex(
+        /^\d+(st|nd|rd|th) call$/,
+        "Call count must be in the format '1st call', '2nd call', etc."
+      ),
+  })
+  .refine(
+    (data) => {
+      if (data.supplynit && !data.supplyitemname) {
+        return false;
+      }
+      return true;
+    },
+    {
+      message: "Supply item name is required when supply is true",
+      path: ["supplyitemname"],
+    }
+  )
+  .refine(
+    (data) => {
+      return data.tender_document_Download_from >= data.tender_pulishing_Date;
+    },
+    {
+      message: "Document download date must be after publishing date",
+      path: ["tender_document_Download_from"],
+    }
+  )
+  .refine(
+    (data) => {
+      return data.tender_end_date_time_from > data.tender_start_time_from;
+    },
+    {
+      message: "End date/time must be after start date/time",
+      path: ["tender_end_date_time_from"],
+    }
+  );
+
+export const NoticeSchema = z.object({
+  title: z.string().min(1, "Title is required"),
+  description: z.string().min(1, "Description is required"),
+  department: z.string().min(1, "Department is required"),
+  type: z.enum(["Tender", "Notice", "Circular", "Other"]),
+  reference: z.string().min(1, "Reference number is required"),
+  files: z
+    .array(
+      z.object({
+        name: z.string(),
+        url: z.string(),
+        type: z.string(),
+        cloudinaryId: z.string(),
+      })
+    )
+    .optional()
+    .default([]),
+});
+
+export type NoticeSchemaType = z.infer<typeof NoticeSchema>;

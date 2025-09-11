@@ -1,22 +1,13 @@
-import { db } from "@/lib/db";
+import { prisma } from "@/lib/prisma";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@/components/ui/table";
-import { Briefcase, AlertCircle, Loader2 } from "lucide-react";
-import { Badge } from "@/components/ui/badge";
-import PDFGeneratorComponent from "@/components/PrintTemplet/ScrutnisheetTemplete";
+
+import { FinancialYearFilter } from "@/components/FinancialYearFilter";
+import { getFinancialYearDateRange } from "@/utils/financialYear";
 import { scrutneesheettype } from "@/types/worksdetails";
+import { AlertCircle, Briefcase, Loader2 } from "lucide-react";
 import { Suspense } from "react";
 import { DataTable } from "@/components/data-table";
 import { columns } from "./columns";
-import { FinancialYearFilter } from "@/components/FinancialYearFilter";
-import { getFinancialYearDateRange } from "@/utils/financialYear";
 
 interface PrintScrutinySheetPageProps {
   searchParams: { financialYear?: string; search?: string };
@@ -40,7 +31,7 @@ async function getWorkDetails(
       };
     }
 
-    const workdetails = await db.worksDetail.findMany({
+    const workdetails = await prisma.worksDetail.findMany({
       where: whereClause,
       include: {
         nitDetails: true,

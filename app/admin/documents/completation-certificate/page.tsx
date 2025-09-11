@@ -1,4 +1,4 @@
-import { db } from "@/lib/db";
+import { prisma } from "@/lib/prisma";
 import { DataTable } from "@/components/data-table";
 import { columns } from "./columns";
 import { FinancialYearFilter } from "@/components/FinancialYearFilter";
@@ -25,7 +25,7 @@ async function getPaymentDetails(financialYear?: string) {
     };
   }
 
-  return await db.worksDetail.findMany({
+  return await prisma.worksDetail.findMany({
     where: whereClause,
     include: {
       nitDetails: true,

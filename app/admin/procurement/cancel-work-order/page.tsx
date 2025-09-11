@@ -1,10 +1,8 @@
-import { db } from "@/lib/db";
+import { prisma } from "@/lib/prisma";
 import { CancelWorkOrderClient } from "./client";
 
-
-
 async function getWorkOrders() {
-  const workOrders = await db.workorderdetails.findMany({
+  const workOrders = await prisma.workorderdetails.findMany({
     where: {
       Bidagency: {
         WorksDetail: {

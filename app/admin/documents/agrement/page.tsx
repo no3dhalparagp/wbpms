@@ -1,11 +1,12 @@
 import { Suspense } from "react";
-import { db } from "@/lib/db";
-import { Agreement } from "@/types/agreement";
+import { prisma } from "@/lib/prisma";
+
 import { FileText } from "lucide-react";
 import { DataTable } from "@/components/data-table";
 import { columns } from "./columns";
 import { FinancialYearFilter } from "@/components/FinancialYearFilter";
 import { getFinancialYearDateRange } from "@/utils/financialYear";
+import { Agreement } from "@/types/agreement";
 
 interface AgreementCertificatePageProps {
   searchParams: { financialYear?: string; search?: string };
@@ -31,7 +32,7 @@ async function getAgreements(financialYear?: string): Promise<Agreement[]> {
   }
 
   try {
-    return await db.aggrementModel.findMany({
+    return await prisma.aggrementModel.findMany({
       where: whereClause,
       select: {
         id: true,

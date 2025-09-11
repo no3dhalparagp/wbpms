@@ -1,10 +1,10 @@
 import { DataTable } from "@/components/data-table";
 import React from "react";
 import { columns } from "./columns";
-import { db } from "@/lib/db";
+import { prisma } from "@/lib/prisma";
 
 const Page = async () => {
-  const data = await db.aOC.findMany({
+  const data = await prisma.aOC.findMany({
     include: {
       WorksDetail: {
         include: {

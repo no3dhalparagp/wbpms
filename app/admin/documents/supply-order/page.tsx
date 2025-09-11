@@ -1,9 +1,10 @@
-import { db } from "@/lib/db";
+import { prisma } from "@/lib/prisma";
 import React from "react";
-import { DataTable } from "@/components/ui/data-table";
+
 import { columns } from "./columns";
 import { FinancialYearFilter } from "@/components/FinancialYearFilter";
 import { getFinancialYearDateRange } from "@/utils/financialYear";
+import { DataTable } from "@/components/data-table";
 
 interface SupplyOrderPageProps {
   searchParams: { financialYear?: string; search?: string };
@@ -41,7 +42,7 @@ const SupplyOrderPage = async ({ searchParams }: SupplyOrderPageProps) => {
     };
   }
 
-  const workOrders = await db.workorderdetails.findMany({
+  const workOrders = await prisma.workorderdetails.findMany({
     where: whereClause,
     include: {
       awardofcontractdetails: true,

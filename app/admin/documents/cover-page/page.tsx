@@ -1,7 +1,7 @@
 import CoverPagePrint from "@/components/PrintTemplet/CoverPage";
 import { ShowWorkOrderDetails } from "@/components/show-work-order-details";
 import { ShowNitDetails } from "@/components/ShowNitDetails";
-import { db } from "@/lib/db";
+import { prisma } from "@/lib/prisma";
 import {
   Table,
   TableBody,
@@ -37,7 +37,7 @@ export default async function Cover({ searchParams }: CoverPageProps) {
     };
   }
 
-  const getwork = await db.worksDetail.findMany({
+  const getwork = await prisma.worksDetail.findMany({
     where: whereClause,
     include: {
       nitDetails: true,

@@ -2,10 +2,12 @@
 
 import type { ColumnDef } from "@tanstack/react-table"
 import { Button } from "@/components/ui/button"
-import type { AddFinancialDetailsType } from "@/types"
+
 import { EyeIcon, PlusIcon } from "lucide-react"
 import { ShowNitDetails } from "@/components/ShowNitDetails"
-import { BidFormDialog } from "@/components/bid-form-dialog"
+
+import { AddFinancialDetailsType } from "@/types/financialType"
+import { BidFormDialog } from "@/components/admin/bid-form-dialog"
 
 export const columns: ColumnDef<AddFinancialDetailsType>[] = [
   {

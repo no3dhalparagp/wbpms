@@ -1,4 +1,4 @@
-import { db } from "@/lib/db";
+import { prisma } from "@/lib/prisma";
 import { formatDate } from "@/utils/utils";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
@@ -18,7 +18,7 @@ export const metadata = {
 
 async function getPublishedNITs() {
   try {
-    return await db.nitDetails.findMany({
+    return await prisma.nitDetails.findMany({
       where: {
         isPublished: false, // Only get published NITs
       },
@@ -61,9 +61,7 @@ export default async function PublishedNITPage() {
                 <TableCell className="text-right">
                   {!nit.publishhardcopy ? (
                     <Button asChild variant="outline">
-                      <Link
-                        href={`/admindashboard/manage-tender/upload/${nit.id}`}
-                      >
+                      <Link href={`/admin/upload/${nit.id}`}>
                         Upload NIT Document
                       </Link>
                     </Button>

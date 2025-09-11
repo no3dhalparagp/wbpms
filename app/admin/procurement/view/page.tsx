@@ -1,11 +1,11 @@
 import React from "react";
-import { db } from "@/lib/db";
+import { prisma } from "@/lib/prisma";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { PlusCircle, FileText } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import dynamic from "next/dynamic";
-import { deleteNitAction } from "@/action/bookNitNuber";
+import { deleteNitAction } from "@/app/actions/procurement/bookNitNuber";
 
 const NITListWithYearFilter = dynamic(() => import("./NITListWithYearFilter"), {
   ssr: false,
@@ -13,7 +13,7 @@ const NITListWithYearFilter = dynamic(() => import("./NITListWithYearFilter"), {
 
 async function getNITs() {
   try {
-    return await db.nitDetails.findMany({
+    return await prisma.nitDetails.findMany({
       orderBy: { createdAt: "desc" },
       include: {
         WorksDetail: {

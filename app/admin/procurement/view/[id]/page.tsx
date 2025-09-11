@@ -1,5 +1,5 @@
 import { notFound } from "next/navigation";
-import { db } from "@/lib/db";
+import { prisma } from "@/lib/prisma";
 import { formatDate } from "@/utils/utils";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -11,7 +11,7 @@ export default async function NITDetailsPage({
 }) {
   const { id } = await params;
 
-  const nit = await db.nitDetails.findUnique({
+  const nit = await prisma.nitDetails.findUnique({
     where: { id },
     include: {
       WorksDetail: {

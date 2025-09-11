@@ -1,11 +1,10 @@
-import { sentforTechnicalevelution } from "@/action/bookNitNuber";
-import { BidderDetails } from "@/components/bidder-details";
-import AddBidderTechnicalDetails from "@/components/form/AddBidder";
-import AddBidder from "@/components/form/AddBidder";
+import { sentforTechnicalevelution } from "@/app/actions/procurement/bookNitNuber";
+import { BidderDetails } from "@/components/admin/bidder-details";
+import AddBidder from "@/components/procurmentform/AddBidder";
 import { SubmitButton } from "@/components/submit-button";
 import { Button } from "@/components/ui/button";
 import { ShowWorkDetails } from "@/components/Work-details";
-import { db } from "@/lib/db";
+import { prisma } from "@/lib/prisma";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 
@@ -16,7 +15,7 @@ type PageProps = {
 };
 
 export default async function Page({ params }: PageProps) {
-  const workdetails = await db.worksDetail.findUnique({
+  const workdetails = await prisma.worksDetail.findUnique({
     where: {
       id: params.workid,
       tenderStatus: {
@@ -55,9 +54,7 @@ export default async function Page({ params }: PageProps) {
           workdetails.biddingAgencies.length >= 3 && (
             <form action={sentforTechnicalevelution}>
               <input type="hidden" name="workid" value={workdetails.id} />
-              <SubmitButton
-                className="bg-sky-400 hover:bg-sky-500 text-white"
-              >
+              <SubmitButton className="bg-sky-400 hover:bg-sky-500 text-white">
                 Send For Technical Evaluation
               </SubmitButton>
             </form>

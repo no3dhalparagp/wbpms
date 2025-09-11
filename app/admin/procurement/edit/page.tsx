@@ -17,12 +17,12 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { MoreHorizontal, Pencil, Trash2, Plus, Check, X } from "lucide-react";
-import { db } from "@/lib/db";
+import { prisma } from "@/lib/prisma";
 import Link from "next/link";
 import { Badge } from "@/components/ui/badge";
 
 async function getNits() {
-  return await db.nitDetails.findMany({
+  return await prisma.nitDetails.findMany({
     orderBy: { createdAt: "desc" },
   });
 }
@@ -51,7 +51,7 @@ export default async function NitTablePage() {
             </Link>
           </div>
         </CardHeader>
-        
+
         <CardContent className="p-0">
           {nits.length === 0 ? (
             <div className="py-12 text-center">
@@ -67,19 +67,33 @@ export default async function NitTablePage() {
               <Table className="min-w-full">
                 <TableHeader className="bg-gray-50">
                   <TableRow>
-                    <TableHead className="w-[80px] font-bold text-gray-700">Sl No</TableHead>
-                    <TableHead className="font-bold text-gray-700">Memo Number</TableHead>
-                    <TableHead className="font-bold text-gray-700">Memo Date</TableHead>
-                    <TableHead className="font-bold text-gray-700">Publishing Date</TableHead>
-                    <TableHead className="font-bold text-gray-700">Supply</TableHead>
-                    <TableHead className="font-bold text-gray-700">Status</TableHead>
-                    <TableHead className="text-right font-bold text-gray-700">Actions</TableHead>
+                    <TableHead className="w-[80px] font-bold text-gray-700">
+                      Sl No
+                    </TableHead>
+                    <TableHead className="font-bold text-gray-700">
+                      Memo Number
+                    </TableHead>
+                    <TableHead className="font-bold text-gray-700">
+                      Memo Date
+                    </TableHead>
+                    <TableHead className="font-bold text-gray-700">
+                      Publishing Date
+                    </TableHead>
+                    <TableHead className="font-bold text-gray-700">
+                      Supply
+                    </TableHead>
+                    <TableHead className="font-bold text-gray-700">
+                      Status
+                    </TableHead>
+                    <TableHead className="text-right font-bold text-gray-700">
+                      Actions
+                    </TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
                   {nits.map((nit, index) => (
-                    <TableRow 
-                      key={nit.id} 
+                    <TableRow
+                      key={nit.id}
                       className="border-b hover:bg-gray-50 transition-colors"
                     >
                       <TableCell className="font-medium text-gray-600">
@@ -92,7 +106,9 @@ export default async function NitTablePage() {
                         {nit.memoDate ? formatDate(nit.memoDate) : "-"}
                       </TableCell>
                       <TableCell>
-                        {nit.publishingDate ? formatDate(nit.publishingDate) : "-"}
+                        {nit.publishingDate
+                          ? formatDate(nit.publishingDate)
+                          : "-"}
                       </TableCell>
                       <TableCell>
                         {nit.isSupply ? (
@@ -107,7 +123,9 @@ export default async function NitTablePage() {
                       </TableCell>
                       <TableCell>
                         {nit.isPublished ? (
-                          <Badge className="bg-blue-100 text-blue-800">Published</Badge>
+                          <Badge className="bg-blue-100 text-blue-800">
+                            Published
+                          </Badge>
                         ) : (
                           <Badge variant="outline">Draft</Badge>
                         )}
@@ -115,16 +133,16 @@ export default async function NitTablePage() {
                       <TableCell className="text-right">
                         <DropdownMenu>
                           <DropdownMenuTrigger asChild>
-                            <Button 
-                              variant="ghost" 
+                            <Button
+                              variant="ghost"
                               className="h-8 w-8 p-0 focus:ring-2 focus:ring-indigo-200"
                             >
                               <span className="sr-only">Open menu</span>
                               <MoreHorizontal className="h-4 w-4 text-gray-500" />
                             </Button>
                           </DropdownMenuTrigger>
-                          <DropdownMenuContent 
-                            align="end" 
+                          <DropdownMenuContent
+                            align="end"
                             className="rounded-lg shadow-lg border border-gray-200"
                           >
                             <DropdownMenuLabel className="text-gray-700">
@@ -133,7 +151,7 @@ export default async function NitTablePage() {
                             <DropdownMenuSeparator />
                             <DropdownMenuItem asChild>
                               <Link
-                                href={`/admindashboard/manage-tender/edit/${nit.id}`}
+                                href={`/admin/edit/${nit.id}`}
                                 className="flex items-center px-4 py-2 hover:bg-gray-50 cursor-pointer text-gray-700"
                               >
                                 <Pencil className="mr-2 h-4 w-4 text-indigo-600" />

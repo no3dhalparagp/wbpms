@@ -1,4 +1,4 @@
-import { db } from "@/lib/db";
+import { prisma } from "@/lib/prisma";
 import { WorkList } from "./WorkList";
 import { Metadata } from "next";
 import { Suspense } from "react";
@@ -34,7 +34,7 @@ async function getPaymentDetails(financialYear?: string) {
       };
     }
 
-    return await db.worksDetail.findMany({
+    return await prisma.worksDetail.findMany({
       where: whereClause,
       include: {
         nitDetails: true,

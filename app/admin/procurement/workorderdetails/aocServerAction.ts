@@ -1,12 +1,12 @@
-"use server"
+"use server";
 
-import { createAgreement } from "@/action/create-agrement";
 import { register } from "@/lib/register";
 import { bidagencybyid } from "@/lib/auth";
-import { db } from "@/lib/db";
-import { sentAwardedNotification } from "@/lib/mail";
+import { prisma } from "@/lib/prisma";
+
 import { CreateAgreementInput } from "@/types/agreement";
 import { z } from "zod";
+import { createAgreement } from "@/app/actions/procurement/create-agrement";
 
 // Validation schema
 const AocSchema = z.object({
@@ -42,7 +42,7 @@ export const addAoCdetails = async (data: FormData) => {
     const workordeermemodate = new Date(validation.data.workordeermemodate);
 
     // Use transaction for all database operations
-    const result = await db.$transaction(async (tx) => {
+    const result = await prisma.$transaction(async (tx) => {
       // Create AoC
       const aoc = await tx.awardofContract.create({
         data: {
@@ -99,33 +99,22 @@ export const addAoCdetails = async (data: FormData) => {
       throw new Error("Bidder not found");
     }
 
-    // Register bid agency and send notification
-    await Promise.all([
-      register(bidagencyId, work.earnestMoneyFee),
-      bidder.agencydetails.email
-        ? sentAwardedNotification(
-            bidder.agencydetails.email,
-            work.nitDetails?.memoNumber || 0,
-            work.nitDetails?.memoDate || new Date(),
-            work.workslno,
-            bidder.agencydetails.name
-          )
-        : Promise.resolve(),
-    ]);
+    await register(bidagencyId, work.earnestMoneyFee);
 
     return { success: "Work order finalized successfully." };
   } catch (error) {
     console.error("Failed to create work order:", error);
-    
+
     // Provide more specific error messages
     if (error instanceof z.ZodError) {
       return { error: "Invalid input data" };
     }
-    
-    return { 
-      error: error instanceof Error 
-        ? error.message 
-        : "Failed to create work order. Please try again later." 
+
+    return {
+      error:
+        error instanceof Error
+          ? error.message
+          : "Failed to create work order. Please try again later.",
     };
   }
 };

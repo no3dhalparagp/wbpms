@@ -1,4 +1,3 @@
-import { Button } from "@/components/ui/button";
 import {
   Card,
   CardContent,
@@ -6,25 +5,16 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@/components/ui/table";
-import { Badge } from "@/components/ui/badge";
-import { db } from "@/lib/db";
-import { EyeIcon, InfoIcon } from "lucide-react";
+
+import { prisma } from "@/lib/prisma";
+import { InfoIcon } from "lucide-react";
 import React from "react";
-import Link from "next/link";
-import { ShowNitDetails } from "@/components/ShowNitDetails";
+
 import { DataTable } from "@/components/data-table";
 import { columns } from "./columns";
 
 export default async function AddFinancialDetails() {
-  const work = await db.worksDetail.findMany({
+  const work = await prisma.worksDetail.findMany({
     where: {
       tenderStatus: "FinancialBidOpening",
     },

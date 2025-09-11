@@ -1,11 +1,11 @@
-import { db } from "@/lib/db";
+import { prisma } from "@/lib/prisma";
 import { WorkList } from "./WorkList";
 import { Metadata } from "next";
 import { Suspense } from "react";
 import { Loader2 } from "lucide-react";
 import { FinancialYearFilter } from "@/components/FinancialYearFilter";
 import { getFinancialYearDateRange } from "@/utils/financialYear";
-import { fetchWorkDataForBulkWorkOrder } from "@/action/fetchWorkDataForBulkWorkOrder";
+
 import { ErrorBoundary } from "@/components/ErrorBoundary";
 import { Workorderdetails } from "@/types/tender-manage";
 
@@ -34,7 +34,7 @@ async function getWorkOrderDetails(
         },
       };
     }
-    return await db.workorderdetails.findMany({
+    return await prisma.workorderdetails.findMany({
       where: whereClause,
       include: {
         awardofcontractdetails: true,

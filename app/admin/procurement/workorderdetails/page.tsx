@@ -1,8 +1,8 @@
-import { db } from "@/lib/db";
+import { prisma } from "@/lib/prisma";
 import FinancialWorkDetailsTable from "./FinancialWorkDetailsTable";
 
 export default async function FinancialWorkDetails() {
-  const financialWorkDetails = await db.worksDetail.findMany({
+  const financialWorkDetails = await prisma.worksDetail.findMany({
     where: {
       tenderStatus: "FinancialEvaluation",
     },

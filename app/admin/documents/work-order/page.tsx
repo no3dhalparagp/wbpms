@@ -2,7 +2,7 @@
 import React from "react";
 import { DataTable } from "@/components/data-table";
 import { columns } from "./columns";
-import { db } from "@/lib/db";
+import { prisma } from "@/lib/prisma";
 import { FileText, Search } from "lucide-react";
 import { FinancialYearFilter } from "@/components/FinancialYearFilter";
 import { getFinancialYearDateRange } from "@/utils/financialYear";
@@ -81,7 +81,7 @@ const WorkOrderPage = async ({ searchParams }: WorkOrderPageProps) => {
     ];
   }
 
-  const data = await db.workorderdetails.findMany({
+  const data = await prisma.workorderdetails.findMany({
     where: whereClause,
     include: {
       awardofcontractdetails: true,

@@ -10,12 +10,12 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { db } from "@/lib/db";
+import { prisma } from "@/lib/prisma";
 import { formatDateTime } from "@/utils/utils";
 import { ShowNitDetails } from "@/components/ShowNitDetails";
 
 const NitDetailsPage = async () => {
-  const dateover = await db.nitDetails.findMany({
+  const dateover = await prisma.nitDetails.findMany({
     where: {
       technicalBidOpeningDate: {
         lt: new Date(),
