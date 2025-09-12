@@ -39,7 +39,7 @@ import {
 } from "@/components/ui/select";
 import { toast } from "@/components/ui/use-toast";
 import { actionplanschema } from "@/schema/actionplan";
-import { createschme } from "@/action/uploadwork";
+import { createschme } from "@/app/actions/uploadwork";
 import { cn } from "@/lib/utils";
 
 export default function AddActionPlanForm() {

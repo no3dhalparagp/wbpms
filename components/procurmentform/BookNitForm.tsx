@@ -6,7 +6,7 @@ import { z } from "zod";
 import { Form } from "@/components/ui/form";
 import { Button } from "@/components/ui/button";
 import CustomFormField, { FormFieldType } from "@/components/CustomFormField";
-import { bookNitNumber } from "@/action/bookNitNuber";
+import { bookNitNumber } from "@/app/actions/procurement/bookNitNuber";
 import {
   AlertCircle,
   CheckCircle2,

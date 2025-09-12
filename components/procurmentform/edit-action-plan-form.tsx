@@ -19,7 +19,7 @@ import {
 } from "@/components/ui/form";
 import { toast } from "@/components/ui/use-toast";
 import { ActionPlanDetailsProps, actionplanschema } from "@/schema/actionplan";
-import { updateActionPlan } from "@/action/fetchApprovedActionPlans";
+import { updateActionPlan } from "@/app/actions/fetchApprovedActionPlans";
 
 export default function EditActionPlanForm({
   initialData,

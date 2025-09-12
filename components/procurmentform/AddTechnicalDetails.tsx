@@ -19,7 +19,7 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog"
 import CustomFormField, { FormFieldType } from "@/components/CustomFormField"
-import { addtechnicaldetailsofagency } from "@/action/bookNitNuber"
+import { addtechnicaldetailsofagency } from "@/app/actions/procurement/bookNitNuber"
 import { AddTechnicalDetailsSchema, type AddTechnicalDetailsSchemaType } from "@/schema/tender-management-schema"
 
 interface AddTechnicalDetailsProps {

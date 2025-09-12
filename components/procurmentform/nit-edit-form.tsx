@@ -9,7 +9,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import CustomFormField, { FormFieldType } from "@/components/CustomFormField";
-import { updateNitNumber } from "@/action/bookNitNuber";
+import { updateNitNumber } from "@/app/actions/procurement/bookNitNuber";
 import "react-datepicker/dist/react-datepicker.css";
 import {
   AlertCircle,
@@ -185,7 +185,7 @@ export default function NitEditForm({
             </Badge>
           </div>
         </CardHeader>
-        
+
         <CardContent className="p-6">
           {error && (
             <Alert variant="destructive" className="mb-6 rounded-lg">
@@ -198,14 +198,21 @@ export default function NitEditForm({
               </div>
             </Alert>
           )}
-          
+
           {success && (
-            <Alert variant="default" className="mb-6 bg-green-50 border-green-200 rounded-lg">
+            <Alert
+              variant="default"
+              className="mb-6 bg-green-50 border-green-200 rounded-lg"
+            >
               <div className="flex items-start">
                 <CheckCircle2 className="h-5 w-5 mt-0.5 mr-3 text-green-600" />
                 <div>
-                  <AlertTitle className="font-semibold text-green-800">Success</AlertTitle>
-                  <AlertDescription className="text-green-700">{success}</AlertDescription>
+                  <AlertTitle className="font-semibold text-green-800">
+                    Success
+                  </AlertTitle>
+                  <AlertDescription className="text-green-700">
+                    {success}
+                  </AlertDescription>
                 </div>
               </div>
             </Alert>
@@ -214,7 +221,7 @@ export default function NitEditForm({
           <Form {...form}>
             <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
               <input type="hidden" {...form.register("id")} />
-              
+
               {renderFormSection(
                 "Tender Details",
                 <FileText className="h-5 w-5" />,
@@ -330,7 +337,7 @@ export default function NitEditForm({
                     onClick={onCancel ? onCancel : () => router.back()}
                     className="flex items-center justify-center px-6 py-3 border border-gray-300 hover:bg-gray-50"
                   >
-                    <ArrowLeft className="mr-2 h-4 w-4" /> 
+                    <ArrowLeft className="mr-2 h-4 w-4" />
                     Cancel Changes
                   </Button>
                   <Button

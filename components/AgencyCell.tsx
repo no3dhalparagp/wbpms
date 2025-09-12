@@ -1,6 +1,6 @@
 "use client";
 
-import { getAgencyDetailsById } from "@/action/bookNitNuber";
+import { getAgencyDetailsById } from "@/app/actions/procurement/bookNitNuber";
 import { useEffect, useState } from "react";
 
 // Props passed to this component

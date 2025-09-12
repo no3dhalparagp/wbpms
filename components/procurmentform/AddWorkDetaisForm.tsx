@@ -61,9 +61,9 @@ import {
 } from "lucide-react";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 
-import { fetchApprovedActionPlans } from "@/action/fetchApprovedActionPlans";
-import { fetchFinancialYears } from "@/action/fetchFinancialYears";
-import { addTenderDetails } from "@/action/addTenderDetails";
+import { fetchApprovedActionPlans } from "@/app/actions/fetchApprovedActionPlans";
+import { fetchFinancialYears } from "@/app/actions/fetchFinancialYears";
+import { addTenderDetails } from "@/app/actions/addTenderDetails";
 
 const predefinedParticipationFees = [
   "400",

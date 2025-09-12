@@ -28,7 +28,10 @@ import {
 } from "@/components/ui/dialog";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Input } from "@/components/ui/input";
-import { addBiderDetails, getAgencyDetails } from "@/action/bookNitNuber";
+import {
+  addBiderDetails,
+  getAgencyDetails,
+} from "@/app/actions/procurement/bookNitNuber";
 import { useToast } from "@/components/ui/use-toast";
 import { cn } from "@/lib/utils";
 

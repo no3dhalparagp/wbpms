@@ -233,3 +233,5 @@ export type AddFinancialDetailsType = {
     };
   }>;
 };
+// Alias for the original type name used in your bid form
+export type workdetailfinanicalProps = AddFinancialDetailsType;
