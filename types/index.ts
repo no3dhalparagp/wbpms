@@ -211,3 +211,25 @@ export type CompletationCertificate = Prisma.WorksDetailGetPayload<{
     };
   };
 }>;
+
+// Define the types based on your Prisma schema
+export type AddFinancialDetailsType = {
+  id: string;
+  workslno: number;
+  finalEstimateAmount: number;
+  tenderStatus: string;
+  ApprovedActionPlanDetails: {
+    activityDescription: string;
+  };
+  nitDetails: {
+    memoNumber: number;
+    memoDate: Date;
+  };
+  biddingAgencies: Array<{
+    id: string;
+    biddingAmount: number | null;
+    agencydetails: {
+      name: string;
+    };
+  }>;
+};
