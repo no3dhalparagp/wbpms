@@ -23,7 +23,7 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { ShowNitDetails } from "@/components/ShowNitDetails";
-import { fetchWorkData } from "@/action";
+import { fetchWorkData } from "@/app/actions";
 import { generatePDFAll } from "@/components/PrintTemplet/all-con-certificat";
 import { Calendar as CalendarComponent } from "@/components/ui/calendar";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";

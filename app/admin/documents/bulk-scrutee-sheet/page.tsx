@@ -35,7 +35,10 @@ import {
 } from "lucide-react";
 import { generatePDF } from "@/components/pdfgenerator";
 import { workdetailsforprint } from "@/types";
-import { fetchworkdetailsbynitno, fetchNitNo } from "@/action/bookNitNuber";
+import {
+  fetchworkdetailsbynitno,
+  fetchNitNo,
+} from "@/app/actions/procurement/bookNitNuber";
 import { formatDate } from "@/utils/utils";
 
 const TEMPLATE_PATH = "/templates/scrutnisheettemplete.json";

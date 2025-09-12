@@ -174,3 +174,40 @@ export enum RenewalStatus {
   REJECTED = "REJECTED",
   COMPLETED = "COMPLETED",
 }
+export type workdetailsforprint = Prisma.WorksDetailGetPayload<{
+  include: {
+    nitDetails: true;
+    ApprovedActionPlanDetails: true;
+    biddingAgencies: {
+      include: {
+        agencydetails: true;
+        technicalEvelution: {
+          include: {
+            credencial: true;
+            validityofdocument: true;
+          };
+        };
+      };
+    };
+  };
+}>;
+export type CompletationCertificate = Prisma.WorksDetailGetPayload<{
+  include: {
+    nitDetails: true;
+    paymentDetails: true;
+    ApprovedActionPlanDetails: true;
+    AwardofContract: {
+      include: {
+        workorderdetails: {
+          include: {
+            Bidagency: {
+              include: {
+                agencydetails: true;
+              };
+            };
+          };
+        };
+      };
+    };
+  };
+}>;
