@@ -53,7 +53,7 @@ export default function NitTableRow({ item, worklist }: NitTableRowProps) {
       </TableCell>
       <TableCell className="text-right">
         <Link
-          href={`/admindashboard/manage-tender/addbidderdetails/${worklist.id}`}
+          href={`/admin/addbidderdetails/${worklist.id}`}
           passHref
         >
           <Button

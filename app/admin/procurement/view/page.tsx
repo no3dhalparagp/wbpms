@@ -51,7 +51,7 @@ export default async function DemoPage() {
                 Create and manage tender notices efficiently
               </p>
             </div>
-            <Link href="/admindashboard/manage-tender/create" passHref>
+            <Link href="/admin/create" passHref>
               <Button className="bg-blue-600 hover:bg-blue-700 text-white">
                 <PlusCircle className="mr-2 h-4 w-4" />
                 New NIT

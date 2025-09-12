@@ -46,7 +46,7 @@ export default async function Page({ params }: PageProps) {
       <BidderDetails workdetails={workdetails} workid={workdetails.id} />
 
       <div className="flex justify-center space-x-4">
-        <Link href="/admindashboard/manage-tender/addbidderdetails">
+        <Link href="/admin/addbidderdetails">
           <Button variant="outline">Back to Work Page</Button>
         </Link>
 
