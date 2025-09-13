@@ -36,7 +36,7 @@ import {
   
 } from "lucide-react";
 import { vendorSchema } from "@/schema/venderschema";
-import { vendorSchemaAction } from "@/action/uploadwork";
+import { vendorSchemaAction } from "@/app/actions/uploadwork";
 import {
   Select,
   SelectContent,
