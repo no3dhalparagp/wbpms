@@ -1,5 +1,5 @@
 import { Suspense } from "react";
-import EditVendorForm from "@/components/procurement/Edit-vendor-details-form";
+import EditVendorForm from "@/components/procurementform/Edit-vendor-details-form";
 import { prisma } from "@/lib/prima";
 import { notFound } from "next/navigation";
 import { AgencyDetails } from "@prisma/client";

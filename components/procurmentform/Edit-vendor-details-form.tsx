@@ -34,7 +34,7 @@ import {
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { AlertCircle, CheckCircle2, Loader2 } from "lucide-react";
 import { vendorSchema } from "@/schema/venderschema";
-import { updateAgencyDetails } from "@/app/actions/agency-details";
+import { updateAgencyDetails } from "@/action/agency-details";
 import { useRouter } from "next/navigation";
 
 export default function Editvendorform({
@@ -112,10 +112,7 @@ export default function Editvendorform({
                       <FormLabel className="text-gray-700 flex items-center gap-1">
                         Agency Type <span className="text-red-500">*</span>
                       </FormLabel>
-                      <Select
-                        onValueChange={field.onChange}
-                        defaultValue={field.value}
-                      >
+                      <Select onValueChange={field.onChange} defaultValue={field.value}>
                         <FormControl>
                           <SelectTrigger className="border-gray-300 h-12">
                             <SelectValue placeholder="Select agency type" />
@@ -138,16 +135,11 @@ export default function Editvendorform({
                   render={({ field }) => (
                     <FormItem>
                       <FormLabel className="text-gray-700 flex items-center gap-1">
-                        {agencyType === "FARM" ? "Farm Name" : "Full Name"}{" "}
-                        <span className="text-red-500">*</span>
+                        {agencyType === "FARM" ? "Farm Name" : "Full Name"} <span className="text-red-500">*</span>
                       </FormLabel>
                       <FormControl>
                         <Input
-                          placeholder={
-                            agencyType === "FARM"
-                              ? "Farm Name"
-                              : "Enter full name"
-                          }
+                          placeholder={agencyType === "FARM" ? "Farm Name" : "Enter full name"}
                           {...field}
                           className="focus:ring-2 focus:ring-blue-500 border-gray-300 h-12"
                         />
@@ -164,8 +156,7 @@ export default function Editvendorform({
                     render={({ field }) => (
                       <FormItem>
                         <FormLabel className="text-gray-700 flex items-center gap-1">
-                          Proprietor Name{" "}
-                          <span className="text-red-500">*</span>
+                          Proprietor Name <span className="text-red-500">*</span>
                         </FormLabel>
                         <FormControl>
                           <Input
