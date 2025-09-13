@@ -1,16 +1,14 @@
-export const dynamic = "force-dynamic";
-export const revalidate = 0;
-export const runtime = "nodejs";
+import AddActionPlanForm from "@/components/add-action-plan-form";
+import Modal from "@/components/Modal";
 
-import { requireAdmin } from "@/lib/auth-utils";
-
-export default async function ActionPlansPage() {
-  await requireAdmin();
+const page = () => {
   return (
-    <div className="space-y-2">
-      <h1 className="text-2xl font-semibold">Action Plans</h1>
-      <p className="text-sm text-muted-foreground">Plan, track and manage actions.</p>
-    </div>
+    <Modal>
+      <>
+        <AddActionPlanForm />
+      </>
+    </Modal>
   );
-}
+};
 
+export default page;
