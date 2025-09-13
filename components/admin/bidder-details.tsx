@@ -2,7 +2,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { ScrollArea } from "@/components/ui/scroll-area"
 import { UserIcon, Trash2Icon, StoreIcon, User2Icon } from "lucide-react"
-import { deleteBidder } from "@/action/bookNitNuber"
+import { deleteBidder } from "@/app/actions/procurement/bookNitNuber"
 import { cn } from "@/lib/utils"
 
 // Mock AgencyType enum since we don't have Prisma setup
