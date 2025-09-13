@@ -5,7 +5,7 @@ import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { AlertCircle, Check, ChevronsUpDown, Loader2 } from "lucide-react";
-import { fetchNitNo } from "@/action/bookNitNuber";
+import { fetchNitNo } from "@/app/actions/procurement/bookNitNuber";
 import { cn } from "@/lib/utils";
 import {
   Command,

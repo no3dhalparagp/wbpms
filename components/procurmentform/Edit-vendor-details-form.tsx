@@ -34,7 +34,7 @@ import {
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { AlertCircle, CheckCircle2, Loader2 } from "lucide-react";
 import { vendorSchema } from "@/schema/venderschema";
-import { updateAgencyDetails } from "@/action/agency-details";
+import { updateAgencyDetails } from "@/app/actions/agency-details";
 import { useRouter } from "next/navigation";
 
 export default function Editvendorform({
