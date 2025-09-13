@@ -1,6 +1,6 @@
 import { Suspense } from "react";
-import EditVendorForm from "@/components/form/Edit-vendor-details-form";
-import { db } from "@/lib/db";
+import EditVendorForm from "@/components/procurement/Edit-vendor-details-form";
+import { prisma } from "@/lib/prima";
 import { notFound } from "next/navigation";
 import { AgencyDetails } from "@prisma/client";
 import { z } from "zod";
@@ -11,7 +11,7 @@ interface PageProps {
 }
 
 async function getAgencyDetails(id: string): Promise<AgencyDetails | null> {
-  const agency = await db.agencyDetails.findUnique({
+  const agency = await prisma.agencyDetails.findUnique({
     where: { id },
   });
 
