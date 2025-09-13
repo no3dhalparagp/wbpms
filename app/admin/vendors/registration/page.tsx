@@ -1,4 +1,4 @@
-import VendorDetailsForm from "@/components/form/vendor-details-form";
+import VendorDetailsForm from "@/components/vendor-details-form";
 import { Metadata } from "next";
 
 export const metadata: Metadata = {
