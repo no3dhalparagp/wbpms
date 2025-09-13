@@ -2,7 +2,7 @@ import { VisibleDataTable } from "@/components/visible-data-table";
 import { columns } from "./columns";
 import { SearchWorkbyNitNoForm } from "@/components/SearchWorkbyNitno";
 import type { workdetailstype } from "@/types/worksdetails";
-import { fetchworkdetailsbynitno } from "@/action/bookNitNuber";
+import { fetchworkdetailsbynitno } from "@/app/actions/procurement/bookNitNuber";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Info, AlertCircle } from "lucide-react";
 
