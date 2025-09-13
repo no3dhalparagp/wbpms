@@ -168,7 +168,7 @@ const CreateTender = async () => {
                                   className="h-8 w-8 p-0 text-blue-600 hover:text-blue-800 hover:bg-blue-50"
                                 >
                                   <Link
-                                    href={`/admin/add/${nit.id}`}
+                                    href={`/admin/procurement/add/${nit.id}`}
                                     title="Edit"
                                   >
                                     <Pencil className="h-4 w-4" />
@@ -200,7 +200,7 @@ const CreateTender = async () => {
                 </Table>
                 <div className="border-t p-4">
                   <Button variant="outline" className="w-full" asChild>
-                    <Link href="/admin/view">
+                    <Link href="/admin/procurement/view">
                       View All Tenders
                       <ChevronRight className="ml-2 h-4 w-4" />
                     </Link>
