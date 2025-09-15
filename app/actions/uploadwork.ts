@@ -73,6 +73,11 @@ export const createbulkschme = async (
 export async function vendorSchemaAction(values: VendorSchemaType) {
   const validatedFields = vendorSchema.safeParse(values);
 
+  const user = await currentgpuserlogin()
+  if (!user) {
+    throw new Error("User not authenticated");
+  } 
+
   if (!validatedFields.success) {
     return {
       error: "Invalid fields!",
@@ -90,6 +95,7 @@ export async function vendorSchemaAction(values: VendorSchemaType) {
     postalAddress,
     agencyType,
     proprietorName,
+    
   } = validatedFields.data;
 
   try {
@@ -114,6 +120,7 @@ export async function vendorSchemaAction(values: VendorSchemaType) {
         contactDetails: postalAddress,
         agencyType, // Added agency type
         proprietorName, // Added proprietor name (will be null for individuals)
+        gramPanchayatId: user
       },
     });
 
