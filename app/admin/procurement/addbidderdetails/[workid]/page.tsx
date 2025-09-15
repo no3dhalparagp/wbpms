@@ -1,0 +1,65 @@
+import { sentforTechnicalevelution } from "@/app/actions/procurement/bookNitNuber";
+import { BidderDetails } from "@/components/admin/bidder-details";
+import AddBidder from "@/components/procurmentform/AddBidder";
+import { SubmitButton } from "@/components/submit-button";
+import { Button } from "@/components/ui/button";
+import { ShowWorkDetails } from "@/components/Work-details";
+import { prisma } from "@/lib/prisma";
+import Link from "next/link";
+import { notFound } from "next/navigation";
+
+type PageProps = {
+  params: {
+    workid: string;
+  };
+};
+
+export default async function Page({ params }: PageProps) {
+  const workdetails = await prisma.worksDetail.findUnique({
+    where: {
+      id: params.workid,
+      tenderStatus: {
+        in: ["published", "TechnicalBidOpening"],
+      },
+    },
+    include: {
+      nitDetails: true,
+      ApprovedActionPlanDetails: true,
+      biddingAgencies: {
+        include: {
+          agencydetails: true,
+        },
+      },
+    },
+  });
+
+  if (!workdetails) {
+    notFound();
+  }
+
+  return (
+    <div className="container mx-auto p-6 space-y-6">
+      <ShowWorkDetails worksDetailId={workdetails.id} />
+
+      <AddBidder workid={workdetails.id} />
+
+      <BidderDetails workdetails={workdetails} workid={workdetails.id} />
+
+      <div className="flex justify-center space-x-4">
+        <Link href="/admin/addbidderdetails">
+          <Button variant="outline">Back to Work Page</Button>
+        </Link>
+
+        {workdetails.tenderStatus === "TechnicalBidOpening" &&
+          workdetails.biddingAgencies.length >= 3 && (
+            <form action={sentforTechnicalevelution}>
+              <input type="hidden" name="workid" value={workdetails.id} />
+              <SubmitButton className="bg-sky-400 hover:bg-sky-500 text-white">
+                Send For Technical Evaluation
+              </SubmitButton>
+            </form>
+          )}
+      </div>
+    </div>
+  );
+}
