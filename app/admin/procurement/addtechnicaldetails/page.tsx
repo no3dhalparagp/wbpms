@@ -1,4 +1,3 @@
-
 import { FileText, AlertCircle } from "lucide-react";
 import Link from "next/link";
 
@@ -16,9 +15,13 @@ import { Badge } from "@/components/ui/badge";
 import { prisma } from "@/lib/prisma";
 import { formatDateTime } from "@/utils/utils";
 import { ShowNitDetails } from "@/components/ShowNitDetails";
+import { currentgpuserlogin } from "@/lib/auth";
 
 const TechnicalEvaluationPage = async () => {
   const nitdetails = await prisma.nitDetails.findMany({
+    where: {
+      gramPanchayatId: await currentgpuserlogin(),
+    },
     include: {
       WorksDetail: {
         where: {
